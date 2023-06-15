@@ -63,6 +63,7 @@ class AccountVerification(models.Model):
     is_verified = models.BooleanField(default=False)
     search_value = models.CharField(max_length=50)
     extra_data = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 @receiver(post_save, sender=User)
