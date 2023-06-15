@@ -23,16 +23,16 @@ class ApiRootView(APIView):
             # "doctors_url": reverse.reverse_lazy('users:user-doctor-list', request=request),
             "deliver_agents_url": reverse.reverse_lazy('agents:agent-list', request=request),
             "marital_status": reverse.reverse_lazy('core:marital-status-list', request=request),
-            "appointment_types": reverse.reverse_lazy('core:appointment-types-list', request=request),
-            "appointments": reverse.reverse_lazy('patients:appointment-list', request=request),
+            "appointment_types": reverse.reverse_lazy('appointments:type-list', request=request),
+            "appointments": reverse.reverse_lazy('appointments:appointment-list', request=request),
             # "deliver_agents_url": reverse.reverse_lazy('users:user-agent-list', request=request),
             "patients_url": reverse.reverse_lazy('patients:patient-list', request=request),
             "patients_transfer_request_url": reverse.reverse_lazy('core:transfer-request-list', request=request),
             "enrollments_url": reverse.reverse_lazy('awards:enrollment-list', request=request),
-            "patient_appointments": reverse.reverse_lazy('patients:appointment-list', request=request),
-            "patient_prescriptions": reverse.reverse_lazy('patients:prescription-list', request=request),
-            "patient_triads": reverse.reverse_lazy('patients:triad-list', request=request),
-            "patient_test_results": reverse.reverse_lazy('patients:test-result-list', request=request),
+            # "patient_appointments": reverse.reverse_lazy('patients:appointment-list', request=request),
+            "patient_prescriptions": reverse.reverse_lazy('medications:patient-hiv-prescription-list', request=request),
+            "patient_triads": reverse.reverse_lazy('medications:triad-list', request=request),
+            "patient_test_results": reverse.reverse_lazy('medications:lab-test-list', request=request),
             # "patients_url": reverse.reverse_lazy('users:user-patient-list', request=request),
             "health_facilities_types": reverse.reverse_lazy('core:facility-type-list', request=request),
             "health facilities url": reverse.reverse_lazy('core:facility-list', request=request),
@@ -42,21 +42,14 @@ class ApiRootView(APIView):
             "orders_url": reverse.reverse_lazy('orders:order-list', request=request),
             "feedback_url": reverse.reverse_lazy('orders:feedback-list', request=request),
             "delivery_url": reverse.reverse_lazy('orders:delivery-request-list', request=request),
-            "Patient Summary data url": reverse.reverse_lazy('patients:summary-list', request=request),
         })
 
 
 class HealthFacilityViewSet(viewsets.ModelViewSet):
-    def sync_emr(self):
-        from .api import get_and_sync_facilities
-        get_and_sync_facilities()
-
-    def list(self, request, *args, **kwargs):
-        self.sync_emr()
-        return super().list(request, *args, **kwargs)
-
-    permission_classes = [permissions.AllowAny,
-                          custom_permissions.IsDoctorOrReadOnly]
+    permission_classes = [
+        permissions.AllowAny,
+        custom_permissions.IsDoctorOrReadOnly
+    ]
     queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilitySerializer
 

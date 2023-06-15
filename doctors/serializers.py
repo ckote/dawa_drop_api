@@ -11,6 +11,11 @@ class DoctorSerializer(serializers.ModelSerializer):
     hiv_clinic = serializers.HyperlinkedRelatedField(
         view_name='core:facility-detail', queryset=HealthFacility.objects.all()
     )
+    public_profile = serializers.SerializerMethodField()
+
+    def get_public_profile(self, instance):
+        from users.serializers import PublicProfileSerializer
+        return PublicProfileSerializer(instance=instance.user.profile).data
 
     def to_representation(self, instance):
         _dict = super().to_representation(instance)
@@ -30,6 +35,7 @@ class DoctorSerializer(serializers.ModelSerializer):
             'url',
             'doctor_number',
             'hiv_clinic',
+            'public_profile',
             'created_at', 'updated_at')
         extra_kwargs = {
             'url': {'view_name': 'doctors:doctor-detail'},

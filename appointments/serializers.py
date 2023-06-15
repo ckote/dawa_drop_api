@@ -8,7 +8,7 @@ class AppointMentTypeSerializer(serializers.HyperlinkedModelSerializer):
         model = AppointMentType
         fields = ('url', 'type', 'description', 'created_at')
         extra_kwargs = {
-            'url': {'view_name': 'core:appointment-types-detail'}
+            'url': {'view_name': 'appointments:type-detail'}
         }
 
 
@@ -20,9 +20,9 @@ class AppointMentSerializer(serializers.HyperlinkedModelSerializer):
             'created_at', 'updated_at'
         )
         extra_kwargs = {
-            'url': {'view_name': 'patients:appointment-detail'},
+            'url': {'view_name': 'appointments:appointment-detail'},
             'patient': {'view_name': 'patients:patient-detail'},
-            'type': {'view_name': 'core:appointment-types-detail'},
+            'type': {'view_name': 'appointments:type-detail'},
             'doctor': {'view_name': 'doctors:doctor-detail'},
         }
 

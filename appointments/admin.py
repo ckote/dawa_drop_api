@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import AppointMentType, AppointMent
+from medication.admin import PatientTriadInline, PatientLabTestInline
 
 
 # Register your models here.
@@ -18,3 +19,6 @@ class AppointMentInline(admin.TabularInline):
 @admin.register(AppointMent)
 class AppointMentAdmin(admin.ModelAdmin):
     list_display = ('patient', 'type', 'doctor', 'next_appointment_date', 'created_at', 'updated_at')
+    inlines = [
+        PatientTriadInline, PatientLabTestInline
+    ]

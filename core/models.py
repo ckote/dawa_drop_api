@@ -87,8 +87,6 @@ class MaritalStatus(models.Model):
         ordering = ['-created_at']
 
 
-
-
 class DeliveryTimeSlot(models.Model):
     slot = models.CharField(max_length=255)
     start = models.TimeField()

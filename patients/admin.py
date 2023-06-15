@@ -4,7 +4,7 @@ from awards.admin import PatientRedemptionInline, PatientProgramEnrollmentInline
 from awards.models import PatientProgramEnrollment
 from core.admin import TransferRequestInline
 from .models import PatientNextOfKeen, Patient
-
+from appointments.admin import AppointMentInline
 
 # Register your models here.
 
@@ -24,6 +24,7 @@ class PatientAdmin(admin.ModelAdmin):
     inlines = [
         PatientProgramEnrollmentInline,
         PatientNextOfKeenInline,
+        AppointMentInline,
         PatientRedemptionInline,
         TransferRequestInline,
     ]
