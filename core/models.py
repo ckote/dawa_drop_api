@@ -87,18 +87,6 @@ class MaritalStatus(models.Model):
         ordering = ['-created_at']
 
 
-class AppointMentType(models.Model):
-    code = models.CharField(max_length=20, unique=True, null=True, blank=True)
-    remote_id = models.PositiveIntegerField(unique=True)
-    type = models.CharField(max_length=50)
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.type
-
-    class Meta:
-        ordering = ['-created_at']
 
 
 class DeliveryTimeSlot(models.Model):

@@ -38,11 +38,6 @@ class Patient(models.Model):
         return get_remote_current_prescription(self)
 
     @property
-    def prescriptions(self):
-        from .api import get_prescriptions
-        return get_prescriptions(self)["results"]
-
-    @property
     def current_program_enrollment(self):
         """Check if patient:
             1. Has enrolment marked current, if multiple return 1st assumed to be latest
@@ -104,28 +99,13 @@ class PatientNextOfKeen(models.Model):
     full_name = models.CharField(max_length=100)
     relationship = models.CharField(max_length=100)
     address = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
     phone_number = PhoneNumberField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
-
-    class Meta:
-        ordering = ['-created_at']
-
-
-class AppointMent(models.Model):
-    remote_id = models.PositiveIntegerField(unique=True)
-    patient = models.ForeignKey("patients.Patient", related_name='appointments', on_delete=models.CASCADE)
-    type = models.ForeignKey('core.AppointMentType', related_name='appointments', on_delete=models.CASCADE)
-    doctor = models.ForeignKey('doctors.Doctor', related_name='appointments', on_delete=models.CASCADE, )
-    next_appointment_date = models.DateField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.patient.patient_number} {self.type} appointment"
 
     class Meta:
         ordering = ['-created_at']
