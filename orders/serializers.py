@@ -5,6 +5,7 @@ from rest_framework.reverse import reverse
 
 from agents.models import DeliverAgent
 from awards.models import LoyaltyProgram
+from medication.serializers import ARTRegimenSerializer
 from patients.models import Patient
 from users.serializers import PublicProfileSerializer
 from .models import Order, Delivery, DeliveryFeedBack
@@ -63,15 +64,7 @@ class DeliverySerializer(serializers.HyperlinkedModelSerializer):
     cancel_url = serializers.SerializerMethodField()
     route_url = serializers.SerializerMethodField()
     location_stream_url = serializers.SerializerMethodField()
-    prescription = serializers.SerializerMethodField()
-
-    def get_prescription(self, instance):
-        return list(
-            filter(
-                lambda pres: pres["id"] == instance.prescription,
-                instance.order.appointment.patient.prescriptions
-            )
-        )[0]
+    prescription = ARTRegimenSerializer(read_only=True)
 
     def get_start_url(self, instance):
         return reverse(
@@ -127,6 +120,8 @@ class DeliverySerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'url': {'view_name': 'orders:delivery-request-detail'},
             'order': {'view_name': 'orders:order-detail', 'queryset': Order.objects.filter(delivery__isnull=True)},
+            'prescription': {'view_name': 'medications:regimen-detail'},
+
             # 'code': {'read_only': True},
         }
 
@@ -147,6 +142,7 @@ class AgentDeliverySerializer(serializers.HyperlinkedModelSerializer):
     phone_number = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    prescription = ARTRegimenSerializer(read_only=True)
 
     def get_status(self, instance):
         if instance.order.is_delivered:
@@ -218,7 +214,7 @@ class AgentDeliverySerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'url': {'view_name': 'orders:delivery-request-detail'},
             'order': {'view_name': 'orders:order-detail', 'queryset': Order.objects.filter(delivery__isnull=True)},
-            # 'code': {'read_only': True},
+            # 'prescription': {'view_name': 'medications:regimen-detail'},
         }
 
 
@@ -226,6 +222,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     order_id = serializers.SerializerMethodField()
     is_delivered = serializers.SerializerMethodField()
     is_allocated = serializers.SerializerMethodField()
+    reach_out_phone_number = serializers.SerializerMethodField()
     delivery = DeliverySerializer(read_only=True)
 
     def get_order_id(self, instance):
@@ -236,6 +233,15 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_is_allocated(self, instance):
         return instance.is_allocated
+
+    def get_reach_out_phone_number(self, instance):
+        return (
+            str(instance.reach_out_phone_number) if instance.reach_out_phone_number
+            else (
+                str(instance.appointment.patient.user.profile.phone_number)
+                if instance.appointment.patient.user.profile.phone_number else None
+            )
+        )
 
     class Meta:
         model = Order

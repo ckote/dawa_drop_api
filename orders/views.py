@@ -60,6 +60,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         appointments = patient.appointments.filter(
             next_appointment_date__range=self.get_time_range(),
             type__type='Refill'
+            #     TODO FIX THE REFILL WITH CODE INSTEAD
         )
         # if none raise ineligible
         if not appointments.exists():
@@ -98,8 +99,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
         data = resp.json()
         new_appointment = self.create_appointment(data, appointment)
-
-        serializer.save(appointment=new_appointment)
 
     def create_appointment(self, appointment_dict, curr_appointment):
         new_appointment = AppointMent.objects.create(
@@ -149,7 +148,7 @@ class DeliveryRequestViewSet(viewsets.ReadOnlyModelViewSet):
         delivery = Delivery.objects.create(
             order=order,
             code=random_string,
-            prescription=self.order.appointment.patient.current_prescription,
+            prescription=order.appointment.patient.current_prescription.regimen,
             delivery_agent=self.request.user.agent,
             status='in_progress' if start_indicator else None,
             time_started=timezone.now() if start_indicator else None,

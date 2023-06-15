@@ -5,7 +5,7 @@ from awards.models import PatientProgramEnrollment
 from core.admin import TransferRequestInline
 from .models import PatientNextOfKeen, Patient
 from appointments.admin import AppointMentInline
-
+from medication.admin import PatientPrescriptionInline
 # Register your models here.
 
 
@@ -22,6 +22,7 @@ class PatientNextOfKeenInline(admin.TabularInline):
 class PatientAdmin(admin.ModelAdmin):
     list_display = ("user", 'patient_number', 'base_clinic', 'created_at')
     inlines = [
+        PatientPrescriptionInline,
         PatientProgramEnrollmentInline,
         PatientNextOfKeenInline,
         AppointMentInline,

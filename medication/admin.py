@@ -17,6 +17,10 @@ class PatientTriadInline(admin.TabularInline):
     model = Triad
 
 
+class PatientPrescriptionInline(admin.TabularInline):
+    model = PatientHivMedication
+
+
 @admin.register(Triad)
 class TriadAdmin(admin.ModelAdmin):
     list_display = ('appointment', 'weight', 'height', 'temperature', 'heart_rate', 'blood_pressure', 'created_at')
