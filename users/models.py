@@ -62,7 +62,7 @@ class AccountVerification(models.Model):
     code = models.CharField(max_length=4, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     search_value = models.CharField(max_length=50)
-    extra_data = models.CharField(max_length=255)
+    extra_data = models.CharField(max_length=255, null=True, blank=True)
 
 
 @receiver(post_save, sender=User)

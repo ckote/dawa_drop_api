@@ -4,12 +4,18 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from awards.models import LoyaltyProgram, PatientProgramEnrollment
 
+GENDER_CHOICES = (
+    ('male', 'male'),
+    ('female', 'female'),
+    ('other', 'other')
+)
+
 
 # Create your models here.
 
 class Patient(models.Model):
-    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='patient')
-    patient_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='patient', null=True, blank=True)
+    patient_number = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text='Patient CCC Number')
     national_id = models.PositiveIntegerField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     marital_status = models.ForeignKey(
@@ -25,7 +31,12 @@ class Patient(models.Model):
         "core.RefillScheme", on_delete=models.CASCADE, null=True, blank=True
     )
     county_of_residence = models.CharField(max_length=50, null=True, blank=True)
-    occupation = models.CharField(max_length=50, blank=True)
+    occupation = models.CharField(max_length=50, blank=True, null=True)
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
+    email = models.EmailField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -89,8 +100,12 @@ class Patient(models.Model):
     def points_balance(self):
         return self.total_points - self.total_redemption_points
 
+
+    def get_full_name(self):
+        return f"{self.first_name or ''} {self.last_name or ''}"
+
     def __str__(self) -> str:
-        return f"Patient {self.user.get_full_name()}"
+        return f"Patient {self.get_full_name()}"
 
 
 class PatientNextOfKeen(models.Model):

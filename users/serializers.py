@@ -15,6 +15,7 @@ from patients.serializers import PatientSerializer
 from users.models import Profile, Doctor
 
 
+
 class UserCredentialSerializer(serializers.Serializer):
     current_password = serializers.CharField(max_length=50)
     password = serializers.CharField(max_length=16)
@@ -292,13 +293,30 @@ class UserInformationViewSerializer(serializers.ModelSerializer):
 
 
 class AccountSearchSerializer(serializers.Serializer):
-    search = serializers.CharField(required=False, help_text='Patient number or national Id')
+    search = serializers.CharField(required=False, help_text='Patient number or national Id', default=None)
 
     def update(self, instance, validated_data):
         pass
 
     def create(self, validated_data):
         pass
+
+
+class AccountSearchResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Patient
+        fields = ('phone_number', 'patient_number', 'email')
+
+    def to_representation(self, instance):
+        from users.utils import obscure_number, obscure_email
+        dict_ = super().to_representation(instance)
+        dict_['phone_number'] = obscure_number(dict_['phone_number'])
+        dict_['email'] = obscure_email(dict_['email'])
+        dict_['request_verification_url'] = reverse(
+                    viewname='users:user-request-verification',
+                    request=self.context.get('request')
+                ) + f"?account={dict_['patient_number']}"
+        return dict_
 
 
 class AccountVerifySerializer(serializers.Serializer):

@@ -16,9 +16,10 @@ from users.models import Patient, AccountVerification
 from users.serializers import (
     UserProfileSerializer, UserLoginSerializer,
     UserCredentialSerializer, UserRegistrationSerializer, UserInformationViewSerializer, ProfileSerializer,
-    AccountSearchSerializer, AccountVerifySerializer
+    AccountSearchSerializer, AccountVerifySerializer, AccountSearchResultSerializer
 )
 from users.utils import obscure_email, obscure_number, update_patient
+from django.db.models import Q
 
 
 class DoctorsMixin:
@@ -203,26 +204,11 @@ class ProfileMixin:
         user = request.user
         return Response(self.get_serializer(instance=user).data)
 
-    def is_valid(self, search, index):
-        if not (search and index):
-            raise BadRequest()
-        try:
-            index = int(index)
-        except Exception as e:
-            raise BadRequest()
-        # check if exists
-        response = requests.get(
-            url=f"{settings.EMR_BASE_URL}users/patients/",
-            params={'search': search}
-        ).json()
-        patients = list(filter(lambda _patient: _patient["id"] == index, response['results']))
-        if not patients:
-            raise BadRequest()
-        patient = patients[0]
-        return {
-            'email': obscure_number(patient['email']),
-            'phone_number': obscure_number(patient['phone_number'])
-        }
+    def is_valid(self, account):
+        if not Patient.objects.filter(patient_number=account).exists():
+            # todo rais proper error
+            raise BadRequest("Account ain't valid")
+        return Patient.objects.get(patient_number=account)
 
     @action(
         methods=['post'], url_name='find-account', url_path='find-account', detail=False,
@@ -233,57 +219,44 @@ class ProfileMixin:
         """Find patient account with patient number or national id"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        params = serializer.data
-        dict_ = serializer.validated_data
-        results = []
-        if not params:
-            dict_['search'] = ""
-            dict_["results"] = results
-            return Response(
-                data=dict_,
-                status=status.HTTP_200_OK
-            )
-        response = requests.get(
-            url=f"{settings.EMR_BASE_URL}users/patients/",
-            params=params
-        )
-        patients = response.json()
-        for patient in patients["results"]:
-            obscured_number = obscure_number(patient['phone_number'])
-            obscured_email = obscure_email(patient['email'])
-            results.append({
-                'email': obscured_email,
-                'phone_number': obscured_number,
-                'patient_number': patient['patient_number'],
-                'request_verification_url': reverse(
-                    viewname='users:user-request-verification',
-                    request=request
-                ) + f"?search={dict_['search']}&account={patient['id']}"
-            })
-        dict_['results'] = results
-        return Response(data=dict_, status=status.HTTP_200_OK)
+        search_param = serializer.validated_data.get('search')
+        if search_param:
+            patients = Patient.objects.filter(
+                Q(patient_number__contains=search_param) |
+                Q(national_id__contains=search_param)
+            )  # .only('patient_number', 'email', 'phone_number')
+            page = self.paginate_queryset(patients)
+            if page is not None:
+                paginated = AccountSearchResultSerializer(
+                    page,
+                    many=True,
+                    context={'request': request}
+                )
+                return self.get_paginated_response(paginated.data)
+            paginated = self.get_serializer(patients, many=True)
+            return Response(paginated.data)
+        return Response({'search': search_param, 'results': []})
 
     @action(
         methods=['get'], url_name='request-verification', url_path='verify-request', detail=False,
         permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
                             custom_permissions.IsNotValidPatient])
     def request_verification(self, request, *args, **kwargs):
-        search = request.GET.get("search")
-        index = request.GET.get("account")
+        account = request.GET.get("account")
         # validate query strong
-        info = self.is_valid(search, index)
+        patient = self.is_valid(account)
         # create verification object
         AccountVerification.objects.create(
             user=request.user,
-            search_value=search,
-            extra_data=str(index)
+            search_value=account
         )
         data = {
             'verify_url': reverse(
                 viewname='users:user-verify',
                 request=request
             ),
-            'message': f"Check your email {info['email']} or phone number {info['phone_number']} for verification "
+            'message': f"Check your email {obscure_email(patient.email)} or "
+                       f"phone number {obscure_number(str(patient.phone_number))} for verification "
         }
         return Response(data=data)
 
@@ -302,15 +275,12 @@ class ProfileMixin:
                 user=request.user,
                 is_verified=False
             )
-            response = requests.get(
-                url=f"{settings.EMR_BASE_URL}users/patients/",
-                params={'search': verification.search_value}
-            ).json()
-            index = int(verification.extra_data)
-            patient = list(filter(lambda _patient: _patient["id"] == index, response["results"]))[0]
-            update_patient(patient, request)
+            account = verification.search_value
             verification.is_verified = True
             verification.save()
+            patient = Patient.objects.get(patient_number=account)
+            patient.user = request.user
+            patient.save()
             return Response(data={"detail": "Account verification successful"}, status=status.HTTP_200_OK)
         except AccountVerification.DoesNotExist:
             return Response(data={"detail": "Account not found."}, status=status.HTTP_403_FORBIDDEN)
