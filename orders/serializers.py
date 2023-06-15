@@ -3,13 +3,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.reverse import reverse
 
-from agents.models import DeliverAgent
-from awards.models import LoyaltyProgram
+from core.serializers import DeliveryModeSerializer, DeliveryTimeSlotSerializer
 from medication.serializers import ARTRegimenSerializer
-from patients.models import Patient
 from users.serializers import PublicProfileSerializer
 from .models import Order, Delivery, DeliveryFeedBack
-from core.serializers import DeliveryModeSerializer, DeliveryTimeSlotSerializer
 
 
 class DeliveryRequestSerializer(serializers.ModelSerializer):
