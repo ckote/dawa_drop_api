@@ -285,6 +285,25 @@ class ProfileMixin:
         except AccountVerification.DoesNotExist:
             return Response(data={"detail": "Account not found."}, status=status.HTTP_403_FORBIDDEN)
 
+    @action(
+        methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
+        permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
+                            custom_permissions.HasRelatedUserType], )
+    def prefill_details(self, request, *args, **kwargs):
+        patient = request.user.patient
+        user = request.user
+        profile = user.profile
+
+        user.first_name = patient.first_name
+        user.last_name = patient.last_name
+        user.email = patient.email
+        user.save()
+
+        profile.gender = patient.gender
+        profile.phone_number = patient.phone_number
+        profile.save()
+
+        return Response(data={'detail': 'Account details update successfully'})
 
 class DoctorNextOfKeenMixin:
     @action(detail=True)
