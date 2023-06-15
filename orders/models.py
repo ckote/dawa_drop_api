@@ -52,7 +52,7 @@ class Delivery(models.Model):
     """Sore information of how orders were disbusted"""
     order = models.OneToOneField(Order, related_name='delivery', on_delete=models.CASCADE)
     code = models.CharField(max_length=32, unique=True, null=True, blank=True)
-    prescription = models.PositiveIntegerField()
+    prescription = models.ForeignKey('medication.ARTRegimen', on_delete=models.CASCADE, related_name='deliveries')
     # todo Think about delete cascade
     delivery_agent = models.ForeignKey(
         "agents.DeliverAgent",
@@ -108,7 +108,7 @@ class DeliveryFeedBack(models.Model):
 @receiver(post_save, sender=DeliveryFeedBack)
 def create_check_user_program(sender, instance, created, **kwargs):
     from awards.models import LoyaltyProgram, PatientProgramEnrollment
-    """Check for patient point to see if he/she is eligible for moving to next programe"""
+    """Check for patient point to see if he/she is eligible for moving to next program"""
     patient = instance.delivery.order.appointment.patient
     points = patient.total_points
     programs = LoyaltyProgram.objects.filter(entry_points__lte=points).order_by('-entry_points')

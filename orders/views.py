@@ -149,7 +149,7 @@ class DeliveryRequestViewSet(viewsets.ReadOnlyModelViewSet):
         delivery = Delivery.objects.create(
             order=order,
             code=random_string,
-            prescription=self.get_remote_current_prescription_id(),
+            prescription=self.order.appointment.patient.current_prescription,
             delivery_agent=self.request.user.agent,
             status='in_progress' if start_indicator else None,
             time_started=timezone.now() if start_indicator else None,
@@ -160,13 +160,6 @@ class DeliveryRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Order.objects.filter(delivery__isnull=True)
-
-    def get_remote_current_prescription_id(self):
-        order = self.get_object()
-        current = get_remote_current_prescription(order.appointment.patient)
-        if current:
-            return current["id"]
-        return None
 
 
 class DeliveriesViewSet(viewsets.ReadOnlyModelViewSet):
