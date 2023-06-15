@@ -7,7 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 class Order(models.Model):
     reach_out_phone_number = PhoneNumberField(null=True, blank=True)
     appointment = models.OneToOneField(
-        "patients.Appointment",
+        "appointments.Appointment",
         on_delete=models.CASCADE,
         null=True, blank=True
     )

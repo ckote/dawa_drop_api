@@ -8,9 +8,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from django.utils import timezone
 
+from appointments.models import AppointMent
 from core.models import RefillScheme
 from patients.api import get_prescriptions, get_remote_current_prescription
-from patients.models import AppointMent
 from users.utils import post_appointment_to_emr
 from . import mixin
 from core import permisions as custom_permissions

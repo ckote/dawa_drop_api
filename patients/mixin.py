@@ -4,11 +4,12 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from appointments.models import AppointMent, AppointMentType
 from awards.serializers import PatientProgramEnrollmentSerializer, RedemptionSerializer
 from core import permisions as custom_permissions
-from core.models import AppointMentType, HealthFacility, FacilityType
+from core.models import HealthFacility, FacilityType
 from doctors.models import Doctor
-from patients.models import Patient, AppointMent
+from patients.models import Patient
 
 
 class LoyaltyPointsMixin:

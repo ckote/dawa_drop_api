@@ -3,7 +3,7 @@ from django.contrib import admin
 from awards.admin import PatientRedemptionInline, PatientProgramEnrollmentInline
 from awards.models import PatientProgramEnrollment
 from core.admin import TransferRequestInline
-from .models import PatientNextOfKeen, Patient, AppointMent
+from .models import PatientNextOfKeen, Patient
 
 
 # Register your models here.
@@ -28,11 +28,3 @@ class PatientAdmin(admin.ModelAdmin):
         TransferRequestInline,
     ]
 
-
-class AppointMentInline(admin.TabularInline):
-    model = AppointMent
-
-
-@admin.register(AppointMent)
-class AppointMentAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'type', 'doctor', 'next_appointment_date', 'created_at', 'updated_at')

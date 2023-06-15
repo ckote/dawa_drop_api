@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework_nested import routers as nested_routers
 
-from patients.views import PatientViewSet, PatientNextOfKeenViewSet, AppointMentViewSet, MedicationViewSet, \
+from patients.views import PatientViewSet, PatientNextOfKeenViewSet, MedicationViewSet, \
     PatientTriadViewSet, PatientTestViewSet, PatientSummaryViewSet
 
 router = nested_routers.DefaultRouter()
@@ -9,7 +9,6 @@ router.register(prefix=r'prescriptions', viewset=MedicationViewSet, basename='pr
 router.register(prefix=r'triads', viewset=PatientTriadViewSet, basename='triad')
 router.register(prefix=r'test-results', viewset=PatientTestViewSet, basename='test-result')
 router.register(prefix=r'summary', viewset=PatientSummaryViewSet, basename='summary')
-router.register(prefix=r'appointments', viewset=AppointMentViewSet, basename='appointment')
 router.register(prefix=r'', viewset=PatientViewSet, basename='patient')
 
 next_of_keen = nested_routers.NestedDefaultRouter(router, r'', lookup='patient')

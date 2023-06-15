@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.models import HealthFacility, DeliveryMode, FacilityTransferRequest, FacilityType, MaritalStatus, \
-    AppointMentType, DeliveryTimeSlot
+    DeliveryTimeSlot
 
 
 class HealthFacilitySerializer(serializers.HyperlinkedModelSerializer):
@@ -90,15 +90,6 @@ class MaritalStatusSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'status', 'description', 'is_active', 'created_at')
         extra_kwargs = {
             'url': {'view_name': 'core:marital-status-detail'}
-        }
-
-
-class AppointMentTypeSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = AppointMentType
-        fields = ('url', 'type', 'description', 'created_at')
-        extra_kwargs = {
-            'url': {'view_name': 'core:appointment-types-detail'}
         }
 
 

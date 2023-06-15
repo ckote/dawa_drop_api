@@ -8,9 +8,8 @@ from core import permisions as custom_permissions
 from patients import mixin
 from patients.api import get_and_sync_appointments, get_prescriptions, get_triads, get_tests, \
     get_patient_summary_statistics
-from patients.filterset import AppointMentFilterSet
 from patients.models import Patient, PatientNextOfKeen
-from patients.serializers import PatientSerializer, PatientNextOfKeenSerializer, AppointMentSerializer
+from patients.serializers import PatientSerializer, PatientNextOfKeenSerializer
 
 
 # Create your views here.
@@ -43,32 +42,6 @@ class PatientNextOfKeenViewSet(viewsets.ModelViewSet):
                 detail="Warning!!Your are forbidden from accessing other patient private information",
             )
         return PatientNextOfKeen.objects.filter(patient=patient)
-
-
-class AppointMentViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        custom_permissions.IsPatient,
-        custom_permissions.HasRelatedUserType
-    ]
-    serializer_class = AppointMentSerializer
-    filterset_class = AppointMentFilterSet
-
-    search_fields = (
-        "doctor__user__first_name", "doctor__user__last_name",
-        "doctor__user__profile__phone_number", "doctor__doctor_number"
-    )
-
-    def sync_with_emr(self, request):
-        patient = request.user.patient
-        get_and_sync_appointments(patient)
-
-    def list(self, request, *args, **kwargs):
-        self.sync_with_emr(request)
-        return super().list(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return self.request.user.patient.appointments.all()
 
 
 class MedicationViewSet(viewsets.GenericViewSet):

@@ -7,7 +7,7 @@ from django.utils import timezone
 
 class HIVLabTest(models.Model):
     remote_id = models.PositiveIntegerField(unique=True)
-    appointment = models.ForeignKey("appointment.AppointMent", related_name='tests', on_delete=models.CASCADE)
+    appointment = models.ForeignKey("appointments.AppointMent", related_name='lab_tests', on_delete=models.CASCADE)
     cd4_count = models.PositiveIntegerField()
     viral_load = models.PositiveIntegerField()
 
@@ -52,7 +52,7 @@ class PatientHivMedication(models.Model):
 
 
 class Triad(models.Model):
-    appointment = models.ForeignKey('patient.Patients', on_delete=models.CASCADE, related_name='triads')
+    appointment = models.ForeignKey('appointments.AppointMent', on_delete=models.CASCADE, related_name='triads')
     weight = models.DecimalField(decimal_places=2, max_digits=12, blank=True, null=True)
     height = models.DecimalField(decimal_places=2, max_digits=12)
     temperature = models.PositiveIntegerField(null=True, blank=True)

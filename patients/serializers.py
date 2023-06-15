@@ -2,11 +2,11 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from awards.serializers import PatientProgramEnrollmentSerializer, RedemptionSerializer
-from core.models import HealthFacility, FacilityType, MaritalStatus, AppointMentType
-from core.serializers import HealthFacilitySerializer, MaritalStatusSerializer, AppointMentTypeSerializer
+from core.models import HealthFacility, FacilityType, MaritalStatus
+from core.serializers import HealthFacilitySerializer, MaritalStatusSerializer
 from doctors.models import Doctor
 from patients.mixin import PatientAppointmentSyncMixin, FacilitySyncMixin
-from patients.models import PatientNextOfKeen, Patient, AppointMent
+from patients.models import PatientNextOfKeen, Patient
 
 
 class PatientNextOfKeenSerializer(serializers.HyperlinkedModelSerializer):
@@ -119,30 +119,6 @@ class PatientSerializer(serializers.HyperlinkedModelSerializer):
             'marital_status': {'view_name': 'core:marital-status-detail'}
             # 'base_clinic': {'view_name': 'core:facility-detail'}
         }
-
-
-class AppointMentSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = AppointMent
-        fields = (
-            'url', 'id', 'patient', 'type', 'doctor', 'next_appointment_date',
-            'created_at', 'updated_at'
-        )
-        extra_kwargs = {
-            'url': {'view_name': 'patients:appointment-detail'},
-            'patient': {'view_name': 'patients:patient-detail'},
-            'type': {'view_name': 'core:appointment-types-detail'},
-            'doctor': {'view_name': 'doctors:doctor-detail'},
-        }
-
-    def to_representation(self, instance):
-        _dict = super().to_representation(instance)
-        from users.serializers import PublicProfileSerializer
-        _dict.update({
-            'doctor': PublicProfileSerializer(instance=instance.doctor.user.profile, context=self.context).data,
-            'type': AppointMentTypeSerializer(instance=instance.type, context=self.context).data
-        })
-        return _dict
 
 
 class PatientAddUpdateSerializer(serializers.ModelSerializer, PatientAppointmentSyncMixin, FacilitySyncMixin):
