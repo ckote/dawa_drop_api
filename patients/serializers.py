@@ -102,16 +102,9 @@ class PatientSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Patient
         fields = (
-            'url',
-            'patient_number',
-            'next_of_keen',
-            'base_clinic',
-            'county_of_residence',
-            'enrollments',
-            'marital_status',
-            'loyalty_points',
-            'created_at',
-            'updated_at',
+            'url', 'patient_number', 'next_of_keen', 'base_clinic',
+            'county_of_residence', 'enrollments', 'marital_status',
+            'loyalty_points', 'created_at', 'updated_at',
         )
         extra_kwargs = {
             'url': {'view_name': 'patients:patient-detail'},
@@ -133,7 +126,8 @@ class PatientAddUpdateSerializer(serializers.ModelSerializer, PatientAppointment
         fields = (
             'patient_number', 'date_of_birth', 'county_of_residence', 'occupation',
             'national_id', 'marital_status', 'base_clinic', 'next_of_keen',
-            'prescriptions', 'appointments'
+            'prescriptions', 'appointments', 'first_name', 'last_name', 'email',
+            'gender', 'phone_number'
         )
 
     def update(self, instance, validated_data):
