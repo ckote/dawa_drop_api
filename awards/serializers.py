@@ -32,7 +32,7 @@ class NestedLoyaltyProgramSerializer(serializers.HyperlinkedModelSerializer):
         model = LoyaltyProgram
         fields = (
             'url', 'name', 'unit_point', 'image',
-            'description', 'point_rate',
+            'description', 'point_rate', 'entry_points',
             'is_default', 'created_at'
         )
         extra_kwargs = {
@@ -123,6 +123,14 @@ class PatientProgramEnrollmentSerializer(serializers.HyperlinkedModelSerializer)
             'program': {'view_name': 'awards:program-detail'},
         }
 
+    def get_next_program(self, instance):
+        points = instance.patient.total_points
+        current = instance.patient.current_program_enrollment
+        programs = LoyaltyProgram.objects.filter(entry_points__gt=points).order_by('entry_points')
+        if current is None or not programs.exists():
+            return None
+        return programs.first()
+
     def to_representation(self, instance):
         _dict = super().to_representation(instance)
         program_url = _dict.pop("program")
@@ -132,5 +140,16 @@ class PatientProgramEnrollmentSerializer(serializers.HyperlinkedModelSerializer)
                 context=self.context
             ).data
         }
+
         _dict.update(program_obj)
+        if instance.is_current:
+            next_program = self.get_next_program(instance)
+            next_program_obj = {
+                'tip': f'Earn more {next_program.entry_points - instance.patient.total_points} '
+                       f'to reach {next_program.name}'
+                if next_program
+                else
+                'Congratulations yo have reached the highest level'
+            }
+            _dict.update(next_program_obj)
         return _dict
