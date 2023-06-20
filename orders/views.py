@@ -59,7 +59,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # pointing to today or tomorrow
         appointments = patient.appointments.filter(
             next_appointment_date__range=self.get_time_range(),
-            type__type='Refill'
+            type__type='Phamacy Refill'
             #     TODO FIX THE REFILL WITH CODE INSTEAD
         )
         # if none raise ineligible
@@ -81,7 +81,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             # Make sure no other refill appointment in the same date
             if patient.appointments.filter(
                     next_appointment_date=next_appointment_date,
-                    type__type='Refill'
+                    type__type='Phamacy Refill'
             ).exists():
                 raise PermissionDenied(
                     detail="Order already made"

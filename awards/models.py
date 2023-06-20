@@ -63,7 +63,7 @@ class PatientProgramEnrollment(models.Model):
         unique_together = ['patient', 'program']
 
     def __str__(self):
-        return f"{self.patient.user.get_full_name()} {self.program.name} Enrollment"
+        return f"{self.patient.get_full_name()} {self.program.name} Enrollment"
 
 
 class Redemption(models.Model):
