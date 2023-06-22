@@ -5,6 +5,7 @@ from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 
 from core import permisions as custom_permissions
+from .filterset import LabResultFilterSet, TriadFilterSet
 from .models import HIVLabTest, ARTRegimen, PatientHivMedication, Triad
 from .serializers import (
     HIVLabTestSerializer,
@@ -31,6 +32,7 @@ class PatientHIVLabTestViewSet(viewsets.ReadOnlyModelViewSet):
         custom_permissions.HasRelatedUserType
     ]
     serializer_class = HIVLabTestSerializer
+    filterset_class = LabResultFilterSet
 
     def get_queryset(self):
         patient = self.request.user.patient
@@ -61,6 +63,7 @@ class TriadViewSet(viewsets.ModelViewSet):
     serializer_class = TriadSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    filterset_class = TriadFilterSet
+
     def get_queryset(self):
         return Triad.objects.filter(appointment__patient__user=self.request.user)
-
