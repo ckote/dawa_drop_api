@@ -8,7 +8,7 @@ from . import permisions as custom_permissions
 from .models import HealthFacility, DeliveryMode, FacilityTransferRequest, FacilityType, MaritalStatus, \
     DeliveryTimeSlot
 from .serializers import HealthFacilitySerializer, DeliveryModeSerializer, TransferRequestSerializer, \
-    FacilityTypeSerializer, MaritalStatusSerializer, DeliveryTimeSlotSerializer
+    FacilityTypeSerializer, MaritalStatusSerializer, DeliveryTimeSlotSerializer, EMRPatientNotificationSerializer
 from . import mixin
 
 
@@ -95,3 +95,33 @@ class DeliveryTimeSlotViewSet(viewsets.ModelViewSet):
     ]
     queryset = DeliveryTimeSlot.objects.all()
     serializer_class = DeliveryTimeSlotSerializer
+
+
+class ReceiveNotificationView(APIView):
+    permission_classes = [
+        permissions.IsAdminUser
+    ]
+    queryset = Patient.objects.all()
+    serializer_class = EMRPatientNotificationSerializer
+
+    def post(self, request, *args, **kwargs):
+        # serializer = self.serializer_class(data=request.data)
+        self.create_or_update(request.data)
+        return Response({"detail": "Success"})
+
+    def perform_create(self, validated_data):
+        Patient.objects.create(
+            patient_number=validated_data["PATIENT_IDENTIFICATION"]["INTERNAL_PATIENT_ID"]["ID"],
+            national_id=validated_data['']
+        )
+
+    def perform_update(self, instance, validated_data):
+        pass
+
+    def create_or_update(self, validated_data):
+        patient_id = validated_data["PATIENT_IDENTIFICATION"]["INTERNAL_PATIENT_ID"]["ID"]
+        patients = Patient.objects.filter(patient_number=patient_id)
+        if patients.exists():
+            self.perform_update(patients.first(), validated_data)
+        else:
+            self.perform_create(validated_data)

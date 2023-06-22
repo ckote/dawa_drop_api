@@ -27,7 +27,8 @@ class HIVLabTestViewSet(viewsets.ModelViewSet):
 class PatientHIVLabTestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
-        custom_permissions.IsPatient
+        custom_permissions.IsPatient,
+        custom_permissions.HasRelatedUserType
     ]
     serializer_class = HIVLabTestSerializer
 

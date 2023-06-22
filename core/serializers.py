@@ -100,3 +100,7 @@ class DeliveryTimeSlotSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'url': {'view_name': "core:time-slot-detail"}
         }
+
+
+class EMRPatientNotificationSerializer(serializers.Serializer):
+    PATIENT_IDENTIFICATION = serializers.JSONField()

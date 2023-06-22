@@ -16,5 +16,6 @@ router.register(viewset=DeliveryModeViewSet, prefix='deliver-mode', basename='mo
 app_name = 'core'
 urlpatterns = [
     path('', views.ApiRootView.as_view(), name='root'),
+    path('subscription/', views.ReceiveNotificationView.as_view(), name='subscription'),
 ]
 urlpatterns.extend(router.urls)

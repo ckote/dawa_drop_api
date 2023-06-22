@@ -1,16 +1,18 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from appointments.serializers import AppointMentSerializer
 from .models import HIVLabTest, ARTRegimen, PatientHivMedication, Triad
 
 
 class HIVLabTestSerializer(serializers.HyperlinkedModelSerializer):
+    appointment = AppointMentSerializer(read_only=True)
     class Meta:
         model = HIVLabTest
         fields = ('url', 'id', 'appointment', 'cd4_count', 'viral_load')
         extra_kwargs = {
             'url': {'view_name': 'medications:lab-test-detail'},
-            'appointment': {'view_name': 'appointments:appointment-detail'},
+            # 'appointment': {'view_name': 'appointments:appointment-detail'},
         }
 
 
