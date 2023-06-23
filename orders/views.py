@@ -87,6 +87,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                     detail="Order already made"
                 )
 
+        '''
+
         resp = post_appointment_to_emr({
             'previous_appointment': appointment.remote_id,
             'next_appointment_date': next_appointment_date
@@ -99,6 +101,17 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
         data = resp.json()
         new_appointment = self.create_appointment(data, appointment)
+        
+        '''
+
+        new_appointment = AppointMent.objects.create(
+            patient=appointment.patient,
+            type=appointment.type,
+            doctor=appointment.doctor,
+            next_appointment_date=next_appointment_date
+        )
+
+        serializer.save(appointment=new_appointment)
 
     def create_appointment(self, appointment_dict, curr_appointment):
         new_appointment = AppointMent.objects.create(

@@ -6,7 +6,7 @@ from django.db import models
 
 class AppointMentType(models.Model):
     code = models.CharField(max_length=20, unique=True, null=True, blank=True)
-    remote_id = models.PositiveIntegerField(unique=True)
+    remote_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     type = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -19,7 +19,7 @@ class AppointMentType(models.Model):
 
 
 class AppointMent(models.Model):
-    remote_id = models.PositiveIntegerField(unique=True)
+    remote_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     patient = models.ForeignKey("patients.Patient", related_name='appointments', on_delete=models.CASCADE)
     type = models.ForeignKey('appointments.AppointMentType', related_name='appointments', on_delete=models.CASCADE)
     doctor = models.ForeignKey('doctors.Doctor', related_name='appointments', on_delete=models.CASCADE, )
