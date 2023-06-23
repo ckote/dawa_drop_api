@@ -3,9 +3,9 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 
-from awards.models import LoyaltyProgram, Reward, PatientProgramEnrollment
+from awards.models import LoyaltyProgram, Reward, PatientProgramEnrollment, FAQ
 from awards.serializers import LoyaltyProgramSerializer, RewardSerializer, RedemptionSerializer, \
-    PatientProgramEnrollmentSerializer
+    PatientProgramEnrollmentSerializer, FAQSerializer
 from core import permisions as custom_permissions
 from users.models import Patient
 
@@ -56,3 +56,11 @@ class PatientProgramEnrollmentViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = PatientProgramEnrollmentSerializer
     queryset = PatientProgramEnrollment.objects.all()
+
+
+class FAQViewSet(viewsets.ModelViewSet):
+    permission_classes = [
+        custom_permissions.IsDoctorOrReadOnly
+    ]
+    serializer_class = FAQSerializer
+    queryset = FAQ.objects.all()

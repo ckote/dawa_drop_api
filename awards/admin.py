@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import LoyaltyProgram, Reward, PatientProgramEnrollment, Redemption
+from .models import LoyaltyProgram, Reward, PatientProgramEnrollment, Redemption, FAQ
 
 
 # Register your models here.
@@ -39,3 +39,8 @@ class PatientRedemptionInline(admin.TabularInline):
 @admin.register(Redemption)
 class RedemptionAdmin(admin.ModelAdmin):
     list_display = ('patient', 'points_redeemed', 'reward', 'created_at')
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ('question', 'answer')

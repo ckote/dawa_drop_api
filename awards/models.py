@@ -74,3 +74,8 @@ class Redemption(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class FAQ(models.Model):
+    question = models.TextField()
+    answer = models.TextField()

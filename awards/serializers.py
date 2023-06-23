@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.reverse import reverse
 
-from awards.models import LoyaltyProgram, Reward, PatientProgramEnrollment, Redemption
+from awards.models import LoyaltyProgram, Reward, PatientProgramEnrollment, Redemption, FAQ
 
 
 class RewardSerializer(serializers.HyperlinkedModelSerializer):
@@ -153,3 +153,12 @@ class PatientProgramEnrollmentSerializer(serializers.HyperlinkedModelSerializer)
             }
             _dict.update(next_program_obj)
         return _dict
+
+
+class FAQSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ('id', 'url', 'question', 'answer')
+        extra_kwargs = {
+            'url': {'view_name': 'awards:faq-detail'}
+        }

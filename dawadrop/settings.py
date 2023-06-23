@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+import dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     'doctors',
     'appointments',
     'medication',
+    'services',
 ]
 
 MIDDLEWARE = [
@@ -219,5 +221,14 @@ REST_FRAMEWORK = {
     ]
 }
 
+# pip install python-dotenv
+dotenv.load_dotenv(BASE_DIR / ".env")
+
 EMR_BASE_URL = "http://192.168.2.92/"
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+MAPQUEST_CONSUMER_KEY = '2dVBKmPmnGAdhlP4AG9HPv7X4dAznIYt'
+# MAPQUEST_CONSUMER_KEY = os.getenv('CONSUMER_KEY')
+MAPQUEST_CONSUMER_SECRETE = os.getenv('CONSUMER_SECRETE')
+MAPQUEST_PLACES_API_ENDPOINT = f"https://www.mapquestapi.com/search/v3/prediction"
+

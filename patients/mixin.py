@@ -20,12 +20,12 @@ class LoyaltyPointsMixin:
             custom_permissions.HasRelatedUserType
         ],
         methods=['get'],
-        url_path='points',
+        url_path='my-points',
         url_name='points',
-        detail=True
+        detail=False
     )
-    def points(self, request, *args, **kwargs):
-        patient = get_object_or_404(Patient, id=kwargs['pk'])
+    def my_points(self, request, *args, **kwargs):
+        patient = request.user.patient
         data = {
             'total': patient.total_points,
             'total_redeemed_points': patient.total_redemption_points,
