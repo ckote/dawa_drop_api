@@ -12,6 +12,8 @@ from awards.serializers import RedemptionSerializer, PatientProgramEnrollmentSer
 from core import permisions as custom_permissions
 from rest_framework import permissions, status
 from urllib.parse import parse_qs
+
+from users.api import search_patient
 from users.models import Patient, AccountVerification
 from users.serializers import (
     UserProfileSerializer, UserLoginSerializer,
@@ -220,7 +222,10 @@ class ProfileMixin:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         search_param = serializer.validated_data.get('search')
-        if search_param:
+        resp = self.find_remote_patient((search_param))
+        return Response(resp)
+
+        """if search_param:
             patients = Patient.objects.filter(
                 Q(patient_number__contains=search_param) |
                 Q(national_id__contains=search_param)
@@ -236,6 +241,11 @@ class ProfileMixin:
             paginated = self.get_serializer(patients, many=True)
             return Response(paginated.data)
         return Response({'search': search_param, 'results': []})
+"""
+
+    def find_remote_patient(self, upi):
+        patients = search_patient(upi)
+        return patients
 
     @action(
         methods=['get'], url_name='request-verification', url_path='verify-request', detail=False,
@@ -304,6 +314,7 @@ class ProfileMixin:
         profile.save()
 
         return Response(data={'detail': 'Account details update successfully'})
+
 
 class DoctorNextOfKeenMixin:
     @action(detail=True)

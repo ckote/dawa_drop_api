@@ -224,11 +224,10 @@ REST_FRAMEWORK = {
 # pip install python-dotenv
 dotenv.load_dotenv(BASE_DIR / ".env")
 
-EMR_BASE_URL = "http://192.168.2.92/"
+EMR_BASE_URL = "https://prod.kenyahmis.org:8400/openmrs/ws/rest/v1/"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 MAPQUEST_CONSUMER_KEY = '2dVBKmPmnGAdhlP4AG9HPv7X4dAznIYt'
 # MAPQUEST_CONSUMER_KEY = os.getenv('CONSUMER_KEY')
 MAPQUEST_CONSUMER_SECRETE = os.getenv('CONSUMER_SECRETE')
 MAPQUEST_PLACES_API_ENDPOINT = f"https://www.mapquestapi.com/search/v3/prediction"
-
