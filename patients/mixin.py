@@ -49,6 +49,31 @@ class LoyaltyPointsMixin:
             custom_permissions.IsPatient,
             custom_permissions.HasRelatedUserType
         ],
+        methods=['get'],
+        url_path='points-history',
+        url_name='points-history',
+        detail=False
+    )
+    def points_history(self, request, *args, **kwargs):
+        from orders.models import DeliveryFeedBack
+        from .serializers import PointsHistorySerializer
+        feed_back = DeliveryFeedBack.objects.filter(delivery__order__appointment__patient__user=request.user)
+        queryset = self.filter_queryset(feed_back)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PointsHistorySerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PointsHistorySerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    @action(
+        permission_classes=[
+            permissions.IsAuthenticated,
+            custom_permissions.IsPatient,
+            custom_permissions.HasRelatedUserType
+        ],
         methods=['post'],
         url_path='redeem-points',
         url_name='redeem-points',

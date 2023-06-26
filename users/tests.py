@@ -6,6 +6,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from phonenumber_field.modelfields import PhoneNumber
 
+
 class RegisterTestCase(APITestCase):
     def setUp(self) -> None:
         self.url = reverse('users:user-register')

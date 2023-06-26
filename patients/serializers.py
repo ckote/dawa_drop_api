@@ -5,6 +5,7 @@ from awards.serializers import PatientProgramEnrollmentSerializer, RedemptionSer
 from core.models import HealthFacility, FacilityType, MaritalStatus
 from core.serializers import HealthFacilitySerializer, MaritalStatusSerializer
 from doctors.models import Doctor
+from orders.models import DeliveryFeedBack
 from patients.mixin import PatientAppointmentSyncMixin, FacilitySyncMixin
 from patients.models import PatientNextOfKeen, Patient
 
@@ -173,3 +174,18 @@ class PatientAddUpdateSerializer(serializers.ModelSerializer, PatientAppointment
                     address=nok["address"],
                     phone_number=nok["phone_number"]
                 )
+
+
+class PointsHistorySerializer(serializers.ModelSerializer):
+    order = serializers.SerializerMethodField()
+
+    def get_order(self, instance):
+        url = reverse(viewname='orders:order-detail', args=[instance.delivery.order.id], request=self.context.get('request'))
+        order_id = instance.delivery.order.get_id()
+        return {
+            'url': url,
+            'id': order_id
+        }
+    class Meta:
+        model = DeliveryFeedBack
+        fields = ('order', 'points_awarded', 'created_at')
