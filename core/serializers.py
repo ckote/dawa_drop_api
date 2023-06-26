@@ -4,6 +4,15 @@ from core.models import HealthFacility, DeliveryMode, FacilityTransferRequest, F
     DeliveryTimeSlot
 
 
+class FacilityTypeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = FacilityType
+        fields = ('url', 'level', 'name', 'description')
+        extra_kwargs = {
+            'url': {'view_name': "core:facility-type-detail"}
+        }
+
+
 class HealthFacilitySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = HealthFacility
@@ -13,14 +22,11 @@ class HealthFacilitySerializer(serializers.HyperlinkedModelSerializer):
             'type': {'view_name': "core:facility-type-detail"}
         }
 
-
-class FacilityTypeSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = FacilityType
-        fields = ('url', 'level', 'name', 'description')
-        extra_kwargs = {
-            'url': {'view_name': "core:facility-type-detail"}
-        }
+    def to_representation(self, instance):
+        _dict = super().to_representation(instance)
+        type_url = _dict.pop("type")
+        _dict.update({'type': FacilityTypeSerializer(instance=instance.type, context=self.context).data})
+        return _dict
 
 
 class DeliveryModeSerializer(serializers.HyperlinkedModelSerializer):
