@@ -50,6 +50,14 @@ def get(url, params):
     return requests.get(url=url, params=params, auth=('admin', 'Admin123'))
 
 
+def get_patient_by_uuid(uuid):
+    url = f'{settings.EMR_BASE_URL}patient/{uuid}'
+    response = get(url=url, params={'v': 'full'})
+    if response.status_code == status.HTTP_200_OK:
+        return response.json()
+    return None
+
+
 def get_phone_number(attributes):
     phone_attribute = find(lambda attribute: attribute['attributeType']['uuid'] == PHONE_NUMBER_TYPE, attributes)
     if phone_attribute is not None:

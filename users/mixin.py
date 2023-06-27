@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import BadRequest
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -12,7 +13,7 @@ from awards.serializers import RedemptionSerializer, PatientProgramEnrollmentSer
 from core import permisions as custom_permissions
 from rest_framework import permissions, status
 from urllib.parse import parse_qs
-
+from core.exceptions import PatientNotFoundException, OperationNotPermittedException
 from users.api import search_patient
 from users.models import Patient, AccountVerification
 from users.serializers import (
@@ -207,10 +208,14 @@ class ProfileMixin:
         return Response(self.get_serializer(instance=user).data)
 
     def is_valid(self, account):
-        if not Patient.objects.filter(patient_number=account).exists():
-            # todo rais proper error
-            raise BadRequest("Account ain't valid")
-        return Patient.objects.get(patient_number=account)
+        from .api import get_patient_by_uuid
+        # Check if patient exist remote if not raise error
+        if get_patient_by_uuid(account) is None:
+            raise PatientNotFoundException()
+        # Check if exist locally and is linked , if yes rase error
+        patients = Patient.objects.filter(uuid=account)
+        if patients.exists() and patients.first().user:
+            raise OperationNotPermittedException(detail='User with search account already exist')
 
     @action(
         methods=['post'], url_name='find-account', url_path='find-account', detail=False,
@@ -222,25 +227,25 @@ class ProfileMixin:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         search_param = serializer.validated_data.get('search')
+        """if search_param:
+                    patients = Patient.objects.filter(
+                        Q(patient_number__contains=search_param) |
+                        Q(national_id__contains=search_param)
+                    )  # .only('patient_number', 'email', 'phone_number')
+                    page = self.paginate_queryset(patients)
+                    if page is not None:
+                        paginated = AccountSearchResultSerializer(
+                            page,
+                            many=True,
+                            context={'request': request}
+                        )
+                        return self.get_paginated_response(paginated.data)
+                    paginated = self.get_serializer(patients, many=True)
+                    return Response(paginated.data)
+                return Response({'search': search_param, 'results': []})"""
+
         resp = self.find_remote_patient(search_param, request)
         return Response({'results': resp})
-
-        """if search_param:
-            patients = Patient.objects.filter(
-                Q(patient_number__contains=search_param) |
-                Q(national_id__contains=search_param)
-            )  # .only('patient_number', 'email', 'phone_number')
-            page = self.paginate_queryset(patients)
-            if page is not None:
-                paginated = AccountSearchResultSerializer(
-                    page,
-                    many=True,
-                    context={'request': request}
-                )
-                return self.get_paginated_response(paginated.data)
-            paginated = self.get_serializer(patients, many=True)
-            return Response(paginated.data)
-        return Response({'search': search_param, 'results': []})"""
 
     def find_remote_patient(self, upi, request):
         patients = search_patient(upi, request)
@@ -251,9 +256,10 @@ class ProfileMixin:
         permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
                             custom_permissions.HasNoRelatedUserType])
     def request_verification(self, request, *args, **kwargs):
+        from .api import get_phone_number, get_patient_by_uuid
         account = request.GET.get("account")
         # validate query strong
-        patient = self.is_valid(account)
+        self.is_valid(account)
         # create verification object
         AccountVerification.objects.create(
             user=request.user,
@@ -264,8 +270,7 @@ class ProfileMixin:
                 viewname='users:user-verify',
                 request=request
             ),
-            'message': f"Check your email {obscure_email(patient.email)} or "
-                       f"phone number {obscure_number(str(patient.phone_number))} for verification "
+            'message': f"Check your phone number {obscure_number(get_phone_number(get_patient_by_uuid(account)['person']['attributes']))} for verification code"
         }
         return Response(data=data)
 
@@ -287,12 +292,30 @@ class ProfileMixin:
             account = verification.search_value
             verification.is_verified = True
             verification.save()
-            patient = Patient.objects.get(patient_number=account)
+            patient = self.get_or_create_patient(account)
             patient.user = request.user
             patient.save()
             return Response(data={"detail": "Account verification successful"}, status=status.HTTP_200_OK)
         except AccountVerification.DoesNotExist:
             return Response(data={"detail": "Account not found."}, status=status.HTTP_403_FORBIDDEN)
+
+    def get_or_create_patient(self, uuid):
+        from .api import get_patient_by_uuid
+        try:
+            # get patient
+            patient = Patient.objects.get(uuid=uuid)
+        except Patient.DoesNotExist:
+            # create_patient
+            remote_patient = get_patient_by_uuid(uuid)
+            if remote_patient is not None:
+                patient = self.create_patient(remote_patient)
+            else:
+                raise PatientNotFoundException()
+        return patient
+
+    def create_patient(self, remote_patient):
+        # TODO Create patient from remote data and return the object
+        pass
 
     @action(
         methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
