@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from appointments.models import AppointMent, AppointMentType
 from awards.serializers import PatientProgramEnrollmentSerializer, RedemptionSerializer
 from core import permisions as custom_permissions
+from core.exceptions import PatientNotFoundException
 from core.models import HealthFacility, FacilityType
 from doctors.models import Doctor
 from patients.models import Patient
@@ -196,3 +197,50 @@ class FacilitySyncMixin:
                 description=facility_type_dict["description"]
             )
         return facility_type
+
+
+class PatientSyncMixin:
+    def get_or_create_patient(self, uuid: str):
+        from users.api import get_patient_by_uuid
+        try:
+            # get patient
+            patient = Patient.objects.get(uuid=uuid)
+        except Patient.DoesNotExist:
+            # create_patient
+            remote_patient = get_patient_by_uuid(uuid)
+            if remote_patient is not None:
+                patient = self.create_patient(remote_patient)
+            else:
+                raise PatientNotFoundException()
+        return patient
+
+    def create_patient(self, remote_patient: dict):
+        # TODO Create patient from remote data and return the object
+        patient = Patient.objects.create(
+            uuid=remote_patient['uuid'],
+            patient_number=self.get_ccc_number(remote_patient['person']['identifiers']),
+            national_id=self.get_national_id(remote_patient['person']['identifiers']),
+            date_of_birth=remote_patient['person']['birthdate'],
+            marital_status=None,
+            base_clinic=None,
+            refill_scheme=None,
+            county_of_residence=None,
+            occupation=None,
+            first_name=remote_patient['person']['preferredName']['givenName'],
+            last_name=remote_patient['person']['preferredName']['middleName'],
+            surname=remote_patient['person']['preferredName']['familyName'],
+            phone_number=self.get_phone_number(remote_patient['person']['attributes'])
+        )
+
+        # TODO GET APPOINTMENTS, TRIAGE AND LAB RESULTS TOGETHER WITH ORDERS
+
+        return patient
+
+    def get_ccc_number(self, identifiers: list):
+        pass
+
+    def get_national_id(self, identifiers: list):
+        pass
+
+    def get_phone_number(self, attributes: list):
+        pass

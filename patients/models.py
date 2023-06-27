@@ -38,9 +38,10 @@ class Patient(models.Model):
     occupation = models.CharField(max_length=50, blank=True, null=True)
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
+    surname = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
-    phone_number = PhoneNumberField(null=True, blank=True)
+    phone_number = models.CharField(null=True, blank=True, max_length=12)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
