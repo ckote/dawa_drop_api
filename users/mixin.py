@@ -222,10 +222,10 @@ class ProfileMixin:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         search_param = serializer.validated_data.get('search')
-        """resp = self.find_remote_patient((search_param))
-        return Response(resp)"""
+        resp = self.find_remote_patient(search_param, request)
+        return Response({'results': resp})
 
-        if search_param:
+        """if search_param:
             patients = Patient.objects.filter(
                 Q(patient_number__contains=search_param) |
                 Q(national_id__contains=search_param)
@@ -240,10 +240,10 @@ class ProfileMixin:
                 return self.get_paginated_response(paginated.data)
             paginated = self.get_serializer(patients, many=True)
             return Response(paginated.data)
-        return Response({'search': search_param, 'results': []})
+        return Response({'search': search_param, 'results': []})"""
 
-    def find_remote_patient(self, upi):
-        patients = search_patient(upi)
+    def find_remote_patient(self, upi, request):
+        patients = search_patient(upi, request)
         return patients
 
     @action(
