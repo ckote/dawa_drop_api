@@ -41,7 +41,7 @@ class Patient(models.Model):
     surname = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
-    phone_number = models.CharField(null=True, blank=True, max_length=12)
+    phone_number = models.CharField(null=True, blank=True, max_length=14)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

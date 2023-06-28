@@ -1,7 +1,8 @@
 import requests
 from django.conf import settings
 from django.utils import timezone
-from patients.mixin import PatientAppointmentSyncMixin
+
+from patients.mixins.sync import PatientAppointmentSyncMixin
 
 
 def get_and_sync_appointments(patient):
