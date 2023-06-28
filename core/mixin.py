@@ -5,6 +5,7 @@ from users.models import Patient
 from . import permisions as custom_permission
 from rest_framework import permissions, status
 
+from .exceptions import PatientNotFoundException
 from .serializers import PatientOnlyTransferSerializer
 
 
@@ -47,3 +48,5 @@ class PatientTransferMixin:
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+

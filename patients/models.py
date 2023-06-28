@@ -15,6 +15,10 @@ GENDER_CHOICES = (
 
 class Patient(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='patient', null=True, blank=True)
+    uuid = models.CharField(
+        max_length=256, null=True, blank=True, unique=True,
+        db_index=True, help_text='remote Universally unique Identifier'
+    )
     patient_number = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text='Patient CCC Number')
     national_id = models.PositiveIntegerField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
@@ -34,9 +38,10 @@ class Patient(models.Model):
     occupation = models.CharField(max_length=50, blank=True, null=True)
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
+    surname = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
-    phone_number = PhoneNumberField(null=True, blank=True)
+    phone_number = models.CharField(null=True, blank=True, max_length=14)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -99,7 +104,6 @@ class Patient(models.Model):
     @property
     def points_balance(self):
         return self.total_points - self.total_redemption_points
-
 
     def get_full_name(self):
         return f"{self.first_name or ''} {self.last_name or ''}"

@@ -12,9 +12,10 @@ def obscure_email(email):
     return obscured_email
 
 
-def obscure_number(phone_number):
-    obscured_number = '{}*******{}'.format(phone_number[:4], phone_number[-2:])
-    return obscured_number
+def obscure_number(number, char="*", start=3, end=-2):
+    if number:
+        return '{}{}{}'.format(number[:start], char * len(number[start:end]), number[end:])
+    return None
 
 
 def update_patient(patient, request):
