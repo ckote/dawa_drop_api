@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 from appointments.models import AppointMent, AppointMentType
 from core.exceptions import PatientNotFoundException
 from core.models import HealthFacility, FacilityType
@@ -66,9 +66,9 @@ class PatientSyncMixin:
         # TODO Create patient from remote data and return the object
         patient = Patient.objects.create(
             uuid=remote_patient['uuid'],
-            patient_number=self.get_ccc_number(remote_patient['person']['identifiers']),
-            national_id=self.get_national_id(remote_patient['person']['identifiers']),
-            date_of_birth=remote_patient['person']['birthdate'],
+            patient_number=self.get_ccc_number(remote_patient['identifiers']),
+            national_id=self.get_national_id(remote_patient['identifiers']),
+            date_of_birth=self.get_dob_from_time(remote_patient['person']['birthdate']),
             marital_status=None,
             base_clinic=None,
             refill_scheme=None,
@@ -82,6 +82,11 @@ class PatientSyncMixin:
         )
         # TODO GET APPOINTMENTS, TRIAGE AND LAB RESULTS TOGETHER WITH ORDERS
         return patient
+
+    @staticmethod
+    def get_dob_from_time(birth_time):
+        time = timezone.datetime.fromisoformat(birth_time)
+        return time.date()
 
     @staticmethod
     def get_gender(gender):

@@ -327,6 +327,18 @@ class AccountSearchResultSerializer(serializers.ModelSerializer):
 class AccountVerifySerializer(serializers.Serializer):
     code = serializers.CharField(max_length=8)
 
+    def validate_code(self, code):
+        from users.models import AccountVerification
+        try:
+            AccountVerification.objects.get(
+                code=code,
+                user=self.context.get('request').user,
+                is_verified=False
+            )
+        except AccountVerification.DoesNotExist:
+            raise ValidationError("Invalid verification code")
+        return code
+
     def update(self, instance, validated_data):
         pass
 

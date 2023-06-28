@@ -14,6 +14,7 @@ from core import permisions as custom_permissions
 from rest_framework import permissions, status
 from urllib.parse import parse_qs
 from core.exceptions import PatientNotFoundException, OperationNotPermittedException
+from patients.mixins.sync import PatientSyncMixin
 from users.api import search_patient
 from users.models import Patient, AccountVerification
 from users.serializers import (
@@ -157,7 +158,7 @@ class AuthMixin:
             return Response(data)
 
 
-class ProfileMixin:
+class ProfileMixin(PatientSyncMixin):
     @action(
         methods=['put', 'get'],
         description='User profile',
@@ -283,39 +284,18 @@ class ProfileMixin:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         code = serializer.validated_data.get('code')
-        try:
-            verification = AccountVerification.objects.get(
-                code=code,
-                user=request.user,
-                is_verified=False
-            )
-            account = verification.search_value
-            verification.is_verified = True
-            verification.save()
-            patient = self.get_or_create_patient(account)
-            patient.user = request.user
-            patient.save()
-            return Response(data={"detail": "Account verification successful"}, status=status.HTTP_200_OK)
-        except AccountVerification.DoesNotExist:
-            return Response(data={"detail": "Account not found."}, status=status.HTTP_403_FORBIDDEN)
-
-    def get_or_create_patient(self, uuid):
-        from .api import get_patient_by_uuid
-        try:
-            # get patient
-            patient = Patient.objects.get(uuid=uuid)
-        except Patient.DoesNotExist:
-            # create_patient
-            remote_patient = get_patient_by_uuid(uuid)
-            if remote_patient is not None:
-                patient = self.create_patient(remote_patient)
-            else:
-                raise PatientNotFoundException()
-        return patient
-
-    def create_patient(self, remote_patient):
-        # TODO Create patient from remote data and return the object
-        pass
+        verification = AccountVerification.objects.get(
+            code=code,
+            user=request.user,
+            is_verified=False
+        )
+        account = verification.search_value
+        patient = self.get_or_create_patient(account)
+        patient.user = request.user
+        patient.save()
+        verification.is_verified = True
+        verification.save()
+        return Response(data={"detail": "Account verification successful"}, status=status.HTTP_200_OK)
 
     @action(
         methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
