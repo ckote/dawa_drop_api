@@ -224,23 +224,43 @@ class PatientSyncMixin:
             marital_status=None,
             base_clinic=None,
             refill_scheme=None,
-            county_of_residence=None,
+            county_of_residence=self.get_address(remote_patient['person']['preferredAddress']),
             occupation=None,
             first_name=remote_patient['person']['preferredName']['givenName'],
             last_name=remote_patient['person']['preferredName']['middleName'],
             surname=remote_patient['person']['preferredName']['familyName'],
-            phone_number=self.get_phone_number(remote_patient['person']['attributes'])
+            phone_number=self.get_phone_number(remote_patient['person']['attributes']),
+            gender=self.get_gender(remote_patient['person']['gender'])
         )
-
         # TODO GET APPOINTMENTS, TRIAGE AND LAB RESULTS TOGETHER WITH ORDERS
-
         return patient
 
-    def get_ccc_number(self, identifiers: list):
-        pass
+    @staticmethod
+    def get_gender(gender):
+        if gender == 'M':
+            return 'male'
+        if gender == 'F':
+            return 'female'
+        return None
 
-    def get_national_id(self, identifiers: list):
-        pass
 
-    def get_phone_number(self, attributes: list):
-        pass
+    @staticmethod
+    def get_address(preferred_address):
+        if preferred_address:
+            return preferred_address['display']
+        return None
+
+    @staticmethod
+    def get_ccc_number(identifiers: list):
+        from users.api import find_ccc
+        return find_ccc(identifiers)
+
+    @staticmethod
+    def get_national_id(identifiers: list):
+        from users.api import find_national_id
+        return find_national_id(identifiers)
+
+    @staticmethod
+    def get_phone_number(attributes: list):
+        from users.api import get_phone_number
+        return get_phone_number(attributes)

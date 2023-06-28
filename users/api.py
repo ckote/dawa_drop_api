@@ -46,6 +46,28 @@ def find(fn, it):
     return None if not filtered else filtered[0]
 
 
+def find_ccc(identifiers):
+    id_ = find(
+        lambda identifier:
+        identifier['identifierType']['uuid'] == UNIQUE_PATIENT_NUMBER,
+        identifiers
+    )
+    if id_ is not None:
+        return id_["identifier"]
+    return None
+
+
+def find_national_id(identifiers):
+    id_ = find(
+        lambda identifier:
+        identifier['identifierType']['uuid'] == NATIONAL_UNIQUE_PATIENT_IDENTIFIER,
+        identifiers
+    )
+    if id_ is not None:
+        return id_["identifier"]
+    return None
+
+
 def get(url, params):
     return requests.get(url=url, params=params, auth=('admin', 'Admin123'))
 
