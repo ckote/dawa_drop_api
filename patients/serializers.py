@@ -1,12 +1,14 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+
+from appointments.mixin.sync import PatientAppointmentSyncMixin
 from awards.serializers import PatientProgramEnrollmentSerializer, RedemptionSerializer
 from core.models import HealthFacility, FacilityType, MaritalStatus
 from core.serializers import HealthFacilitySerializer, MaritalStatusSerializer
 from doctors.models import Doctor
 from orders.models import DeliveryFeedBack
-from patients.mixins.sync import PatientAppointmentSyncMixin, FacilitySyncMixin
+from patients.mixins.sync import FacilitySyncMixin
 from patients.models import PatientNextOfKeen, Patient
 
 

@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.reverse import reverse
+from core.api import get
 
 PHONE_NUMBER_TYPE = 'b2c38640-2603-4629-aebd-3b54f33f1e3a'
 
@@ -68,10 +69,6 @@ def find_national_id(identifiers):
     return None
 
 
-def get(url, params):
-    return requests.get(url=url, params=params, auth=('admin', 'Admin123'))
-
-
 def get_patient_by_uuid(uuid):
     url = f'{settings.EMR_BASE_URL}patient/{uuid}'
     response = get(url=url, params={'v': 'full'})
@@ -133,5 +130,6 @@ def search_patient(upi, request):
         )
         # return response.json()['results']
     raise APIException(
-        detail=f"An error with response code {response.status_code} occurred when searching patient from EMR"
+        detail=f"An error with response code {response.status_code} "
+               f"occurred when searching patient from EMR"
     )

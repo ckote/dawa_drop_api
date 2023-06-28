@@ -12,4 +12,6 @@ class OperationNotPermittedException(APIException):
     default_detail = "You have no permission to performer such action"
 
 
-
+class EMRException(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "An error occurred fetching you data from facility"

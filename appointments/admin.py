@@ -9,7 +9,7 @@ from medication.admin import PatientTriadInline, PatientLabTestInline
 
 @admin.register(AppointMentType)
 class AppointMentTypeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'type', 'description', 'created_at')
+    list_display = ('uuid', 'type', 'description', 'created_at')
 
 
 class AppointMentInline(admin.TabularInline):
@@ -18,7 +18,10 @@ class AppointMentInline(admin.TabularInline):
 
 @admin.register(AppointMent)
 class AppointMentAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'type', 'doctor', 'next_appointment_date', 'created_at', 'updated_at')
+    list_display = (
+        'uuid', 'patient', 'type', 'doctor',
+        'next_appointment_date', 'created_at', 'updated_at'
+    )
     inlines = [
         PatientTriadInline, PatientLabTestInline
     ]
