@@ -1,6 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from appointments.mixin.sync import PatientAppointmentSyncMixin
 from users.models import Patient
 from . import permisions as custom_permission
 from rest_framework import permissions, status
@@ -50,3 +51,6 @@ class PatientTransferMixin:
         return Response(serializer.data)
 
 
+class PatientDetailsSyncMixin(PatientAppointmentSyncMixin):
+    def sync(self, patient):
+        self.sync_appointments(patient)

@@ -13,7 +13,7 @@ class Doctor(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"Doctor {self.user.get_full_name()}"
+        return f"Doctor {self.user.get_full_name() if self.user else self.id}"
 
     class Meta:
         ordering = ['-created_at']

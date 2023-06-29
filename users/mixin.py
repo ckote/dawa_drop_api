@@ -14,6 +14,7 @@ from core import permisions as custom_permissions
 from rest_framework import permissions, status
 from urllib.parse import parse_qs
 from core.exceptions import PatientNotFoundException, OperationNotPermittedException
+from core.mixin import PatientDetailsSyncMixin
 from patients.mixins.sync import PatientSyncMixin
 from users.api import search_patient
 from users.models import Patient, AccountVerification
@@ -158,7 +159,7 @@ class AuthMixin:
             return Response(data)
 
 
-class ProfileMixin(PatientSyncMixin):
+class ProfileMixin(PatientDetailsSyncMixin):
     @action(
         methods=['put', 'get'],
         description='User profile',
@@ -291,6 +292,7 @@ class ProfileMixin(PatientSyncMixin):
         )
         account = verification.search_value
         patient = self.get_or_create_patient(account)
+        self.sync(patient)
         patient.user = request.user
         patient.save()
         verification.is_verified = True

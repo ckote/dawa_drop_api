@@ -10,6 +10,7 @@ class AppointMentType(models.Model):
     type = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    preferred = models.BooleanField(default=False)
 
     def __str__(self):
         return self.type

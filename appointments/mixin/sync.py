@@ -23,7 +23,8 @@ class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
                 type=self.get_or_create_appointment_type(encounter["encounterType"]),
                 doctor=self.get_or_create_doctor_from_encounter_providers(encounter["encounterProviders"]),
                 scheduled_time=encounter["encounterDatetime"],
-                next_appointment_date=encounter["next_appointment_date"]
+                # TODO Handle the next appointment date please
+                # next_appointment_date=encounter["next_appointment_date"]
             )
         return appointment_instance
 
@@ -47,3 +48,9 @@ class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
                 description=encounter_type["description"],
             )
         return appointment_typ
+
+    def sync_appointments(self, patient):
+        from appointments.api import get_patient_encounters
+        encounters = get_patient_encounters(patient.uuid)
+        for encounter in encounters:
+            self.get_or_create_appointment(encounter, patient)

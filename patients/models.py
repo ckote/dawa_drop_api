@@ -20,7 +20,7 @@ class Patient(models.Model):
         db_index=True, help_text='remote Universally unique Identifier'
     )
     patient_number = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text='Patient CCC Number')
-    national_id = models.PositiveIntegerField(null=True, blank=True)
+    national_id = models.CharField(max_length=12, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     marital_status = models.ForeignKey(
         "core.MaritalStatus", on_delete=models.CASCADE,

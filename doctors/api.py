@@ -8,7 +8,7 @@ from core.exceptions import EMRException
 
 
 def get_provider(uuid):
-    url = f'{settings.EMR_BASE_URL}provider'
+    url = f'{settings.EMR_BASE_URL}provider/{uuid}'
     params = {'v': 'full'}
     response = get(url=url, params=params)
     if response.status_code == status.HTTP_200_OK:

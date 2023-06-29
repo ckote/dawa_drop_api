@@ -36,7 +36,6 @@ class FacilitySyncMixin:
         facility_type = None
         try:
             facility_type = FacilityType.objects.get(remote_id=facility_type_dict["id"])
-            # TODO update facility type
         except FacilityType.DoesNotExist:
             facility_type = FacilityType.objects.create(
                 remote_id=facility_type_dict["id"],
@@ -116,4 +115,3 @@ class PatientSyncMixin:
     def get_phone_number(attributes: list):
         from users.api import get_phone_number
         return get_phone_number(attributes)
-

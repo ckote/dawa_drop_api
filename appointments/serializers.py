@@ -30,7 +30,7 @@ class AppointMentSerializer(serializers.HyperlinkedModelSerializer):
         _dict = super().to_representation(instance)
         from users.serializers import PublicProfileSerializer
         _dict.update({
-            'doctor': PublicProfileSerializer(instance=instance.doctor.user.profile, context=self.context).data,
+            'doctor': PublicProfileSerializer(instance=instance.doctor.user.profile if instance.doctor.user else None, context=self.context).data ,
             'type': AppointMentTypeSerializer(instance=instance.type, context=self.context).data
         })
         return _dict
