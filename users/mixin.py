@@ -308,7 +308,8 @@ class ProfileMixin(PatientSyncMixin):
 
         user.first_name = patient.first_name
         user.last_name = patient.last_name
-        user.email = patient.email
+        if patient.email:
+            user.email = patient.email
         user.save()
 
         profile.gender = patient.gender
