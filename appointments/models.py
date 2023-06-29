@@ -27,9 +27,8 @@ class AppointMent(models.Model):
     type = models.ForeignKey('appointments.AppointMentType', related_name='appointments', on_delete=models.CASCADE)
     doctor = models.ForeignKey('doctors.Doctor', related_name='appointments', on_delete=models.CASCADE,
                                help_text='Encounter Provider')
+    scheduled_time = models.DateTimeField(null=True, blank=True)
     next_appointment_date = models.DateField(null=True, blank=True)
-    start_date_time = models.DateTimeField(null=True, blank=True)
-    stop_date_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

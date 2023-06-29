@@ -7,9 +7,9 @@ from core.api import get
 from core.exceptions import EMRException
 
 
-def get_patient_visits(uuid):
-    url = f'{settings.EMR_BASE_URL}visit'
-    params = {'v': 'full', 'includeInactive': 'true', 'patient': uuid}
+def get_patient_encounters(uuid):
+    url = f'{settings.EMR_BASE_URL}encounter'
+    params = {'v': 'full', 'patient': uuid}
     response = get(url=url, params=params)
     if response.status_code == status.HTTP_200_OK:
         return response.json()['results']
@@ -21,7 +21,7 @@ def get_patient_visits(uuid):
 
 
 def get_remote_type(uuid):
-    url = f'{settings.EMR_BASE_URL}visittype/{uuid}'
+    url = f'{settings.EMR_BASE_URL}encountertype/{uuid}'
     params = {'v': 'full'}
     response = get(url=url, params=params)
     if response.status_code == status.HTTP_200_OK:
@@ -34,7 +34,7 @@ def get_remote_type(uuid):
 
 
 def get_visit_types():
-    url = f'{settings.EMR_BASE_URL}visittype'
+    url = f'{settings.EMR_BASE_URL}encountertype'
     params = {'v': 'full'}
     response = get(url=url, params=params)
     if response.status_code == status.HTTP_200_OK:

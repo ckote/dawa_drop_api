@@ -2,70 +2,72 @@ from django.contrib.auth.models import User
 from appointments import api
 from appointments.models import AppointMent, AppointMentType
 from doctors.models import Doctor
+from patients.mixins.sync import PatientSyncMixin
 
 
-class PatientAppointmentSyncMixin:
-    def get_or_create_appointment(self, appointment, patient_instance):
+class PatientAppointmentSyncMixin(PatientSyncMixin):
+    """
+    If no patient then there is need to create one hence extending the Patient sync mixin
+    """
+
+    def get_or_create_appointment(self, encounter, patient=None):
+        """Gets appointment from the database if it exist else creates an appointment from
+        encounter
+        """
         try:
-            appointment_instance = AppointMent.objects.get(uuid=appointment["uuid"])
+            appointment_instance = AppointMent.objects.get(uuid=encounter["uuid"])
         except AppointMent.DoesNotExist:
             appointment_instance = AppointMent.objects.create(
-                uuid=appointment["uuid"],
-                patient=self.get_or_create_patient(appointment["patient"]["uuid"]),
-                type=self.get_or_create_appointment_type(appointment["visitType"], False),
-                start_date_time=appointment["startDatetime"],
-                stop_date_time=appointment["stopDatetime"],
-                # TODO study encounter provider to know if its same as the doctor or not
-                doctor=self.get_or_create_doctor(appointment["doctor"]),
-                next_appointment_date=appointment["next_appointment_date"]
+                uuid=encounter["uuid"],
+                patient=self.get_or_create_patient(encounter["patient"]["uuid"]) if patient is None else patient,
+                type=self.get_or_create_appointment_type(encounter["encounterType"]),
+                doctor=self.get_or_create_doctor(encounter["encounterProviders"]),
+                scheduled_time=encounter["encounterDatetime"],
+                next_appointment_date=encounter["next_appointment_date"]
             )
         return appointment_instance
-
-    def get_or_create_patient(self, uuid):
-        # TODO fetch patient with uuid and add to patient module
-        from patients.models import Patient
-        return Patient.objects.get(uuid=uuid)
 
     @staticmethod
     def get_remote_type(uuid):
         return api.get_remote_type(uuid)
 
-    def get_or_create_appointment_type(self, appointment_type, is_detailed):
+    def get_or_create_appointment_type(self, encounter_type):
+        """Gets appointment type from db if existe else creates one using wncounter dictionary and return it
+        @param encounter_type: EMR encounter type dictionary
+        @return: AppointMentType
+        """
         try:
             appointment_typ = AppointMentType.objects.get(
-                uuid=appointment_type["uuid"])
+                uuid=encounter_type["uuid"])
         except AppointMentType.DoesNotExist:
-            type_ = None
-            if is_detailed:
-                type_ = appointment_type
-            else:
-                type_ = self.get_remote_type(appointment_type["uuid"])
+
             appointment_typ = AppointMentType.objects.create(
-                uuid=type_["uuid"],
-                type=type_["name"],
-                description=type_["description"],
+                uuid=encounter_type["uuid"],
+                type=encounter_type["name"],
+                description=encounter_type["description"],
             )
         return appointment_typ
 
-    def get_or_create_doctor(self, doctor_dict):
+    def get_or_create_doctor(self, encounter_providers):
         """
         Checks of doctor exist else it creates a user and associates it with doctor
         """
+        # TODO Implement fully
         try:
-            doctor = Doctor.objects.get(doctor_number=doctor_dict["doctor_number"])
+            doctor = Doctor.objects.get(doctor_number=encounter_providers["doctor_number"])
         except Doctor.DoesNotExist:
             import secrets
             user = User.objects.create_user(
-                username=doctor_dict["email"],
-                email=doctor_dict["email"],
+                username=encounter_providers["email"],
+                email=encounter_providers["email"],
                 password=secrets.token_hex(6),
-                first_name=doctor_dict["first_name"],
-                last_name=doctor_dict["last_name"]
+                first_name=encounter_providers["first_name"],
+                last_name=encounter_providers["last_name"]
             )
             profile = user.profile
             profile.user_type = 'doctor'
             doctor = Doctor.objects.create(
                 user=user,
-                doctor_number=doctor_dict["doctor_number"]
+                doctor_number=encounter_providers["doctor_number"]
             )
         return doctor
