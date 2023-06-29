@@ -25,7 +25,7 @@ class AppointMentViewSet(viewsets.ReadOnlyModelViewSet):
 
     search_fields = (
         "doctor__user__first_name", "doctor__user__last_name",
-        "doctor__user__profile__phone_number", "doctor__doctor_number"
+        "doctor__user__profile__phone_number"
     )
 
     def get_queryset(self):

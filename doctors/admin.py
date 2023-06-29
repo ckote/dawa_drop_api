@@ -8,4 +8,4 @@ from .models import Doctor
 
 @admin.register(Doctor)
 class DoctorAdmin(admin.ModelAdmin):
-    list_display = ("user", 'doctor_number', 'hiv_clinic', 'created_at')
+    list_display = ("user", 'hiv_clinic', 'created_at')

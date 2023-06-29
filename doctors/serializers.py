@@ -33,13 +33,11 @@ class DoctorSerializer(serializers.ModelSerializer):
         model = Doctor
         fields = (
             'url',
-            'doctor_number',
             'hiv_clinic',
             'public_profile',
             'created_at', 'updated_at')
         extra_kwargs = {
             'url': {'view_name': 'doctors:doctor-detail'},
-            'doctor_number': {'read_only': True},
             # 'hiv_clinic': {'view_name': 'core:facility-detail'}
 
         }

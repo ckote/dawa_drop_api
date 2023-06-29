@@ -7,8 +7,7 @@ from django.db import models
 class Doctor(models.Model):
     """Similar to EMR Encounter provider"""
     uuid = models.CharField(max_length=255, null=True, blank=True, unique=True, db_index=True)
-    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='doctor')
-    doctor_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='doctor', null=True, blank=True)
     hiv_clinic = models.ForeignKey("core.HealthFacility", on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)

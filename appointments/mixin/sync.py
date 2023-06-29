@@ -1,11 +1,11 @@
-from django.contrib.auth.models import User
 from appointments import api
 from appointments.models import AppointMent, AppointMentType
-from doctors.models import Doctor
+from doctors.mixins.sync import ProviderSyncMixin
+
 from patients.mixins.sync import PatientSyncMixin
 
 
-class PatientAppointmentSyncMixin(PatientSyncMixin):
+class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
     """
     If no patient then there is need to create one hence extending the Patient sync mixin
     """
@@ -21,7 +21,7 @@ class PatientAppointmentSyncMixin(PatientSyncMixin):
                 uuid=encounter["uuid"],
                 patient=self.get_or_create_patient(encounter["patient"]["uuid"]) if patient is None else patient,
                 type=self.get_or_create_appointment_type(encounter["encounterType"]),
-                doctor=self.get_or_create_doctor(encounter["encounterProviders"]),
+                doctor=self.get_or_create_doctor_from_encounter_providers(encounter["encounterProviders"]),
                 scheduled_time=encounter["encounterDatetime"],
                 next_appointment_date=encounter["next_appointment_date"]
             )
@@ -47,27 +47,3 @@ class PatientAppointmentSyncMixin(PatientSyncMixin):
                 description=encounter_type["description"],
             )
         return appointment_typ
-
-    def get_or_create_doctor(self, encounter_providers):
-        """
-        Checks of doctor exist else it creates a user and associates it with doctor
-        """
-        # TODO Implement fully
-        try:
-            doctor = Doctor.objects.get(doctor_number=encounter_providers["doctor_number"])
-        except Doctor.DoesNotExist:
-            import secrets
-            user = User.objects.create_user(
-                username=encounter_providers["email"],
-                email=encounter_providers["email"],
-                password=secrets.token_hex(6),
-                first_name=encounter_providers["first_name"],
-                last_name=encounter_providers["last_name"]
-            )
-            profile = user.profile
-            profile.user_type = 'doctor'
-            doctor = Doctor.objects.create(
-                user=user,
-                doctor_number=encounter_providers["doctor_number"]
-            )
-        return doctor
