@@ -5,6 +5,7 @@ from django.db import models
 
 
 class AppointMentType(models.Model):
+    """Similar to encounters type in EMR"""
     uuid = models.CharField(max_length=255, unique=True, null=True, blank=True, db_index=True)
     type = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
@@ -18,10 +19,14 @@ class AppointMentType(models.Model):
 
 
 class AppointMent(models.Model):
+    """
+    Similar to encounter in EMR Visit
+    """
     uuid = models.CharField(max_length=255, unique=True, null=True, blank=True, db_index=True)
     patient = models.ForeignKey("patients.Patient", related_name='appointments', on_delete=models.CASCADE)
     type = models.ForeignKey('appointments.AppointMentType', related_name='appointments', on_delete=models.CASCADE)
-    doctor = models.ForeignKey('doctors.Doctor', related_name='appointments', on_delete=models.CASCADE, )
+    doctor = models.ForeignKey('doctors.Doctor', related_name='appointments', on_delete=models.CASCADE,
+                               help_text='Encounter Provider')
     next_appointment_date = models.DateField(null=True, blank=True)
     start_date_time = models.DateTimeField(null=True, blank=True)
     stop_date_time = models.DateTimeField(null=True, blank=True)

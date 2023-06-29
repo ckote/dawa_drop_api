@@ -101,10 +101,11 @@ def search_patient(upi, request):
     uri = f"{settings.EMR_BASE_URL}patient"
     response = get(uri, params)
     if response.status_code == status.HTTP_200_OK:
-        return map(
+        return map(  # Transform data to display only specific patient fields(uuid, identifiers,phone_no
             lambda patient: {
                 'uuid': patient['uuid'],
                 'identifiers': map(
+                    # Transform identifiers to only display interested attributes the id ame and the value
                     lambda identifier: {
                         # 'uuid': identifier["uuid"],
                         'id_type': identifier['identifierType']["display"],
@@ -113,6 +114,7 @@ def search_patient(upi, request):
                         else identifier['identifier']
                     },
                     filter(
+                        # Filter id deciding what id are return to the user, id are specified in whitelist
                         lambda identifier: identifier["identifierType"]["uuid"] in WHITE_LIST_ID
                         , patient["identifiers"]
                     )
@@ -126,7 +128,11 @@ def search_patient(upi, request):
                     uuid=patient['uuid']
                 ).exists()
             },
-            response.json()['results']
+            filter(
+                #     Filter out recodes with no phone numbers
+                lambda patient: get_phone_number(patient['person']['attributes']) is not None,
+                response.json()['results']
+            )
         )
         # return response.json()['results']
     raise APIException(
