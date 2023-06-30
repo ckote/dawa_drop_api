@@ -57,3 +57,4 @@ class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
 
     def get_remote_encounter_types(self):
         return api.get_encounter_types()
+

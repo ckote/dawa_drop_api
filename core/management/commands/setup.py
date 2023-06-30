@@ -11,8 +11,20 @@ class Command(BaseCommand, PatientAppointmentSyncMixin):
         encounter_types = self.get_remote_encounter_types()
         for encounter_type in encounter_types:
             appointment_type = self.get_or_create_appointment_type(encounter_type)
-            self.stdout.write(self.style.SUCCESS(f'[✔]Appointment type "{appointment_type.type}" imported successfully!.'))
+            self.stdout.write(
+                self.style.SUCCESS(f'[✔]Appointment type "{appointment_type.type}" imported successfully!.'))
+
+    def sync_registered_patients_remote_encounters(self):
+        from patients.models import Patient
+        patients = Patient.objects.exclude(uuid__isnull=True)
+        for patient in patients:
+            self.stdout.write(
+                self.style.SUCCESS(f'[...]Appointment syncing for {patient.get_full_name()} Please wait...'))
+            self.sync_appointments(patient)
+            self.stdout.write(
+                self.style.SUCCESS(f'[✔]Appointments for {patient.get_full_name()} imported successfully!.'))
 
     def handle(self, *args, **options):
         self.sync_appointment_types()
+        self.sync_registered_patients_remote_encounters()
         self.stdout.write(self.style.SUCCESS('[✔]Appointment types imported successfully!.'))

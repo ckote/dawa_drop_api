@@ -44,3 +44,4 @@ def get_encounter_types():
                f"occurred when fetching visit types from EMR",
         code=response.status_code
     )
+
