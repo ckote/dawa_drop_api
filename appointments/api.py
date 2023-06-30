@@ -20,7 +20,7 @@ def get_patient_encounters(uuid):
     )
 
 
-def get_remote_type(uuid):
+def get_encounter_type(uuid):
     url = f'{settings.EMR_BASE_URL}encountertype/{uuid}'
     params = {'v': 'full'}
     response = get(url=url, params=params)
@@ -33,7 +33,7 @@ def get_remote_type(uuid):
     )
 
 
-def get_visit_types():
+def get_encounter_types():
     url = f'{settings.EMR_BASE_URL}encountertype'
     params = {'v': 'full'}
     response = get(url=url, params=params)

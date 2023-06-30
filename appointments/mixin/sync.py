@@ -30,7 +30,7 @@ class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
 
     @staticmethod
     def get_remote_type(uuid):
-        return api.get_remote_type(uuid)
+        return api.get_encounter_type(uuid)
 
     def get_or_create_appointment_type(self, encounter_type):
         """Gets appointment type from db if existe else creates one using wncounter dictionary and return it
@@ -54,3 +54,6 @@ class PatientAppointmentSyncMixin(PatientSyncMixin, ProviderSyncMixin):
         encounters = get_patient_encounters(patient.uuid)
         for encounter in encounters:
             self.get_or_create_appointment(encounter, patient)
+
+    def get_remote_encounter_types(self):
+        return api.get_encounter_types()
