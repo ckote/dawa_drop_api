@@ -293,7 +293,7 @@ class UserInformationViewSerializer(serializers.ModelSerializer):
 
 class AccountSearchSerializer(serializers.Serializer):
     ccc_number = serializers.CharField(required=True, help_text='Patient number or national Id')
-    upi_number = serializers.CharField(required=False, help_text="Optional  Universal patient unique number")
+    # upi_number = serializers.CharField(required=False, help_text="Optional  Universal patient unique number", default="")
     first_name = serializers.CharField(required=True, help_text="Patient first name to help in verifying oneself")
 
     def update(self, instance, validated_data):

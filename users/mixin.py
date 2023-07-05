@@ -235,9 +235,11 @@ class ProfileMixin:
         if patient_ob.user:
             raise VerificationException(detail="Account already exist for that patient")
         # 4. request verification
-        verification = AccountVerification.objects.create(
+        verification = AccountVerification.objects.get_or_create(
             user=request.user,
-            extra_value=patient_ob.patient_number
+            extra_value=patient_ob.patient_number,
+            is_verified=False,
+            expiry_time__gt=timezone.now()
         )
         # TODO implement an sms send otp
         return Response({
@@ -318,25 +320,27 @@ class ProfileMixin:
         except Patient.DoesNotExist:
             return Response(data={'detail': "Patient Not Found"}, status=status.HTTP_403_FORBIDDEN)
 
-        @action(
-            methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
-            permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
-                                custom_permissions.HasRelatedUserType], )
-        def prefill_details(self, request, *args, **kwargs):
-            patient = request.user.patient
-            user = request.user
-            profile = user.profile
+    @action(
+        methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
+        permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
+                            custom_permissions.HasRelatedUserType]
+    )
+    def prefill_details(self, request, *args, **kwargs):
+        patient = request.user.patient
+        user = request.user
+        profile = user.profile
 
-            user.first_name = patient.first_name
-            user.last_name = patient.last_name
+        user.first_name = patient.first_name
+        user.last_name = patient.last_name
+        if patient.email:
             user.email = patient.email
-            user.save()
+        user.save()
 
-            profile.gender = patient.gender
-            profile.phone_number = patient.phone_number
-            profile.save()
+        profile.gender = patient.gender
+        profile.phone_number = patient.phone_number
+        profile.save()
 
-            return Response(data={'detail': 'Account details update successfully'})
+        return Response(data={'detail': 'Account details update successfully'})
 
     class DoctorNextOfKeenMixin:
         @action(detail=True)
