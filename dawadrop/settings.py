@@ -225,6 +225,7 @@ REST_FRAMEWORK = {
 dotenv.load_dotenv(BASE_DIR / ".env")
 
 EMR_BASE_URL = "https://prod.kenyahmis.org:8400/openmrs/ws/rest/v1/"
+USHAURI_BASE_URL = "https://ushauriapi.kenyahmis.org/"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 MAPQUEST_CONSUMER_KEY = '2dVBKmPmnGAdhlP4AG9HPv7X4dAznIYt'

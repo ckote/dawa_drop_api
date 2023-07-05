@@ -292,7 +292,9 @@ class UserInformationViewSerializer(serializers.ModelSerializer):
 
 
 class AccountSearchSerializer(serializers.Serializer):
-    search = serializers.CharField(required=False, help_text='Patient number or national Id', default=None)
+    ccc_number = serializers.CharField(required=True, help_text='Patient number or national Id')
+    upi_number = serializers.CharField(required=False, help_text="Optional  Universal patient unique number")
+    first_name = serializers.CharField(required=True, help_text="Patient first name to help in verifying oneself")
 
     def update(self, instance, validated_data):
         pass
@@ -332,3 +334,18 @@ class AccountVerifySerializer(serializers.Serializer):
 
     def create(self, validated_data):
         pass
+
+    def validate_code(self, code):
+        from .models import AccountVerification
+        from django.utils import timezone
+        request = self.context.get('request')
+        try:
+            AccountVerification.objects.get(
+                code=code,
+                user=request.user,
+                is_verified=False,
+                expiry_time__gt=timezone.now()
+            )
+        except  AccountVerification.DoesNotExist:
+            raise ValidationError("Invalid or expired code")
+        return code

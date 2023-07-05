@@ -3,8 +3,10 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
+from core.exceptions import BadRequestException, HTTP404NotFoundException, VerificationException
 
 PHONE_NUMBER_TYPE = 'b2c38640-2603-4629-aebd-3b54f33f1e3a'
+
 
 def find(fn, it):
     filtered = list(filter(lambda item: fn(item), it))
@@ -26,20 +28,16 @@ def get_identifier_types():
 
 
 def search_patient(upi):
-    params = {'q': upi, 'v': 'full'}
-    uri = f"{settings.EMR_BASE_URL}patient"
+    if not upi:
+        raise BadRequestException(detail='Please provide your cc number')
+    params = {'client_id': upi}
+    uri = f"{settings.USHAURI_BASE_URL}mohupi/search_ccc"
     response = get(uri, params)
     if response.status_code == status.HTTP_200_OK:
-        return map(
-            lambda patient: {
-                'national_id': next((id_["identifier"] for id_ in patient['identifiers'] if
-                                     id_["identifierType"]['uuid'] == 'NATIONAL_ID_TYPE'), None),
-                'upi_number': next(
-                    (id_["identifier"] for id_ in patient['identifiers'] if id_["identifierType"]['uuid'] == 'UPI_TYPE'),
-                    None)
-            },
-            response.json()['results']
-        )
-    raise APIException(
+        data = response.json()
+        if data["success"]:
+            return data['message']
+        raise VerificationException()
+    raise BadRequestException(
         detail=f"An error with response code {response.status_code} occurred when searching patient from EMR"
     )

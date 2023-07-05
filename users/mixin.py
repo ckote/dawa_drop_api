@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import BadRequest
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -13,6 +14,7 @@ from core import permisions as custom_permissions
 from rest_framework import permissions, status
 from urllib.parse import parse_qs
 
+from core.exceptions import VerificationException
 from users.api import search_patient
 from users.models import Patient, AccountVerification
 from users.serializers import (
@@ -217,30 +219,50 @@ class ProfileMixin:
         serializer_class=AccountSearchSerializer, permission_classes=[
             permissions.IsAuthenticated, custom_permissions.IsPatient,
             custom_permissions.HasNoRelatedUserType], )
-    def find_my_account(self, request, *args, **kwargs):
+    def find_my_account_and_verify(self, request, *args, **kwargs):
         """Find patient account with patient number or national id"""
+        # 1. validate user input
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        search_param = serializer.validated_data.get('search')
-        """resp = self.find_remote_patient((search_param))
-        return Response(resp)"""
+        verification_info = serializer.validated_data
+        # 2. Verify patent by first name and ccc_number
+        ccc_number = verification_info.get('ccc_number')
+        patient = self.find_remote_patient(ccc_number)
+        if patient['f_name'] != verification_info.get("first_name"):
+            raise VerificationException()
+        patient_ob = self.get_or_create_patient(patient)
+        # 3. Make sure there is no other account for that patient
+        if patient_ob.user:
+            raise VerificationException(detail="Account already exist for that patient")
+        # 4. request verification
+        verification = AccountVerification.objects.create(
+            user=request.user,
+            extra_value=patient_ob.patient_number
+        )
+        # TODO implement an sms send otp
+        return Response({
+            "message": f"Success!Check your number {request.user.profile.phone_number} messages for "
+                       f"verification code within the next it expires in the next 5 minutes.",
+            "verification_url": reverse(
+                viewname='users:user-verify',
+                request=request
+            ),
+        });
 
-        if search_param:
-            patients = Patient.objects.filter(
-                Q(patient_number__contains=search_param) |
-                Q(national_id__contains=search_param)
-            )  # .only('patient_number', 'email', 'phone_number')
-            page = self.paginate_queryset(patients)
-            if page is not None:
-                paginated = AccountSearchResultSerializer(
-                    page,
-                    many=True,
-                    context={'request': request}
-                )
-                return self.get_paginated_response(paginated.data)
-            paginated = self.get_serializer(patients, many=True)
-            return Response(paginated.data)
-        return Response({'search': search_param, 'results': []})
+    def get_or_create_patient(self, remote_patient):
+        try:
+            patient = Patient.objects.get(patient_number=remote_patient.get('clinic_number'))
+        except Patient.DoesNotExist:
+            patient = Patient.objects.create(
+                patient_number=remote_patient.get('clinic_number'),
+                first_name=remote_patient.get('f_name'),
+                last_name=remote_patient.get('m_name'),
+                sur_name=remote_patient.get('l_name'),
+                national_id=remote_patient.get('national_id'),
+                date_of_birth=remote_patient.get('dob'),
+                phone_number=remote_patient.get('phone_no')
+            )
+        return patient
 
     def find_remote_patient(self, upi):
         patients = search_patient(upi)
@@ -282,40 +304,41 @@ class ProfileMixin:
             verification = AccountVerification.objects.get(
                 code=code,
                 user=request.user,
-                is_verified=False
+                is_verified=False,
+                expiry_time__gt=timezone.now()
             )
-            account = verification.search_value
-            verification.is_verified = True
-            verification.save()
-            patient = Patient.objects.get(patient_number=account)
+            patient = Patient.objects.get(patient_number=verification.extra_value)
             patient.user = request.user
             patient.save()
+            verification.is_verified = True
+            verification.save()
             return Response(data={"detail": "Account verification successful"}, status=status.HTTP_200_OK)
         except AccountVerification.DoesNotExist:
-            return Response(data={"detail": "Account not found."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(data={"detail": "Invalid or expired code!."}, status=status.HTTP_403_FORBIDDEN)
+        except Patient.DoesNotExist:
+            return Response(data={'detail': "Patient Not Found"}, status=status.HTTP_403_FORBIDDEN)
 
-    @action(
-        methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
-        permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
-                            custom_permissions.HasRelatedUserType], )
-    def prefill_details(self, request, *args, **kwargs):
-        patient = request.user.patient
-        user = request.user
-        profile = user.profile
+        @action(
+            methods=['get'], url_name='pre-fill-details', url_path='pre-fill-details', detail=False,
+            permission_classes=[permissions.IsAuthenticated, custom_permissions.IsPatient,
+                                custom_permissions.HasRelatedUserType], )
+        def prefill_details(self, request, *args, **kwargs):
+            patient = request.user.patient
+            user = request.user
+            profile = user.profile
 
-        user.first_name = patient.first_name
-        user.last_name = patient.last_name
-        user.email = patient.email
-        user.save()
+            user.first_name = patient.first_name
+            user.last_name = patient.last_name
+            user.email = patient.email
+            user.save()
 
-        profile.gender = patient.gender
-        profile.phone_number = patient.phone_number
-        profile.save()
+            profile.gender = patient.gender
+            profile.phone_number = patient.phone_number
+            profile.save()
 
-        return Response(data={'detail': 'Account details update successfully'})
+            return Response(data={'detail': 'Account details update successfully'})
 
-
-class DoctorNextOfKeenMixin:
-    @action(detail=True)
-    def next_of_keen(self, request, *args, **kwargs):
-        pass
+    class DoctorNextOfKeenMixin:
+        @action(detail=True)
+        def next_of_keen(self, request, *args, **kwargs):
+            pass

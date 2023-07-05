@@ -7,6 +7,7 @@ from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
+from django.utils import timezone
 
 from agents.models import DeliverAgent
 from awards.models import LoyaltyProgram, PatientProgramEnrollment
@@ -61,8 +62,8 @@ class AccountVerification(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     code = models.CharField(max_length=4, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
-    search_value = models.CharField(max_length=50)
-    extra_data = models.CharField(max_length=255, null=True, blank=True)
+    expiry_time = models.DateTimeField(null=True, blank=True)
+    extra_value = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -74,13 +75,17 @@ def create_profile(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=AccountVerification)
-def generate_unique_verification_code(sender, instance, created, **kwargs):
+def generate_unique_verification_code_and_set_expire(sender, instance, created, **kwargs):
     if created:
         random_string = secrets.token_hex(2)
         # make sure there exist no other unverified verification with generated code
         while AccountVerification.objects.filter(code=random_string,is_verified=False).exists():
             random_string = secrets.token_hex(2)
         instance.code = random_string
+        # TODO Using 5 minutes by default, IMPLEMENT ADMINISTRATIVE CONFIURATION
+        time_diff = timezone.timedelta(minutes=5)
+        expiry_time = timezone.now() + time_diff
+        instance.expiry_time = expiry_time
         instance.save()
 
 # @receiver(pre_save, sender=User)

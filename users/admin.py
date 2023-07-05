@@ -17,4 +17,4 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(AccountVerification)
 class AccountVerificationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'code', 'is_verified', 'search_value', 'extra_data')
+    list_display = ('user', 'code', 'is_verified', 'expiry_time')
