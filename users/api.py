@@ -41,3 +41,20 @@ def search_patient(upi):
     raise BadRequestException(
         detail=f"An error with response code {response.status_code} occurred when searching patient from EMR"
     )
+
+
+def get_user_id(usn, pwd):
+    payload = {
+        "user_name": usn,
+        "password": pwd
+    }
+    uri = f"{settings.USHAURI_BASE_URL}nishauri/signin"
+    response = get(uri)
+    if response.status_code == status.HTTP_200_OK:
+        data = response.json()
+        if data["success"]:
+            return data['message']
+        raise VerificationException()
+    raise BadRequestException(
+        detail=f"An error with response code {response.status_code} occurred when searching patient from EMR"
+    )

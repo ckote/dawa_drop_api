@@ -15,3 +15,6 @@ class HTTP404NotFoundException(APIException):
 class VerificationException(APIException):
     default_detail = "CCC Number/First name combination dont match!"
     status_code = status.HTTP_403_FORBIDDEN
+
+
+
