@@ -17,6 +17,10 @@ def get(url, params):
     return requests.get(url=url, params=params, auth=('admin', 'Admin123'))
 
 
+def post(url, params, payload):
+    return requests.post(url=url, params=params, json=payload, auth=("admin", 'Admin123'))
+
+
 def get_identifier_types():
     uri = f"{settings.EMR_BASE_URL}patientidentifiertype"
     response = get(uri, params={})
@@ -49,12 +53,12 @@ def get_user_id(usn, pwd):
         "password": pwd
     }
     uri = f"{settings.USHAURI_BASE_URL}nishauri/signin"
-    response = get(uri)
+    response = post(uri, {}, payload)
     if response.status_code == status.HTTP_200_OK:
         data = response.json()
         if data["success"]:
-            return data['message']
-        raise VerificationException()
+            return data['data']
+        raise VerificationException(detail=data["msg"])
     raise BadRequestException(
-        detail=f"An error with response code {response.status_code} occurred when searching patient from EMR"
+        detail=f"An error with response code {response.status_code} occurred when getting remote user Id"
     )

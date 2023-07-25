@@ -31,5 +31,8 @@ class AppointMentViewSet(viewsets.ViewSet):
 
     def list(self, request, *args, **kwargs):
         from .api import get_appointments
-        remote_appointments = get_appointments("")
-        return Response({})
+        from users.api import get_user_id
+        user_id = get_user_id("0712311264", '11111111')['user_id']
+        print(user_id)
+        remote_appointments = get_appointments(user_id)
+        return Response(remote_appointments)

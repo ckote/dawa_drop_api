@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from core.exceptions import BadRequestException, HTTP404NotFoundException, VerificationException
-from users.api import get
+from users.api import get, post
 
 
 def get_appointments(user_id, future=False):
